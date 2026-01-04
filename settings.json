@@ -1,28 +1,9 @@
 {
   "slices": [
-    {
-      "id": "Top-Right",
-      "label": "Notepad",
-      "path": "notepad.exe",
-      "args": ""
-    },
-    {
-      "id": "Bottom-Right",
-      "label": "Calculator",
-      "path": "calc.exe",
-      "args": ""
-    },
-    {
-      "id": "Bottom-Left",
-      "label": "Chrome",
-      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-      "args": "www.google.com"
-    },
-    {
-      "id": "Top-Left",
-      "label": "Explorer",
-      "path": "explorer.exe",
-      "args": ""
-    }
+    { "label": "Notepad", "path": "C:\\Windows\\System32\\notepad.exe", "args": "" },
+    { "label": "Calc", "path": "calc.exe", "args": "" },
+    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "args": "" },
+    { "label": "Explorer", "path": "explorer.exe", "args": "" },
+    { "label": "Spotify", "path": "spotify.exe", "args": "" }
   ]
 }
