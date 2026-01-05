@@ -8,7 +8,8 @@ namespace QuickWheel.Models
     {
         App,
         Paste,
-        Key
+        Key,
+        Web
     }
 
     public class AppSettings

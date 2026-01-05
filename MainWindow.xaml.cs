@@ -351,8 +351,9 @@ namespace QuickWheel
             
             // Apply to the Highlight Path
             SelectionHighlight.Data = geometry;
-            SelectionHighlight.Opacity = 1; // Show it
+            SelectionHighlight.Opacity = 1;
         }
+        
         private void CenterMouse()
         {
             var dpi = GetDpiScale();
@@ -363,6 +364,8 @@ namespace QuickWheel
 
         private void RunCommand(SliceConfig config)
         {
+            this.Hide();
+
             try
             {
                 if (config.Type == SliceType.App)
@@ -374,18 +377,28 @@ namespace QuickWheel
                         UseShellExecute = true 
                     });
                 }
+                else if (config.Type == SliceType.Web)
+                {
+                    string url = config.Path;
+                    
+                    if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+                    {
+                        url = "https://" + url;
+                    }
+
+                    Console.WriteLine($"[WEB] Opening: {url}");
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    });
+                }
                 else if (config.Type == SliceType.Paste)
                 {
-                    // 1. Set text to Clipboard
-                    Clipboard.SetText(config.Data);
-
-                    // 2. Wait for window to hide and focus to return
-                    // We do this in a separate task so we don't freeze the UI thread while waiting
+                    Clipboard.SetData(DataFormats.Text, config.Data);
                     System.Threading.Tasks.Task.Run(() => 
                     {
-                        Thread.Sleep(100); // Give Windows 100ms to switch focus back to your text editor
-                        
-                        // 3. Simulate Ctrl+V
+                        Thread.Sleep(250); 
                         InputSender.SendCtrlV();
                     });
                 }

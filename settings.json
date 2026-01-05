@@ -24,6 +24,11 @@
          { "label": "Calculator", "path": "calc.exe" }
       ]
     },
-    { "label": "Explorer", "path": "explorer.exe" }
+    { "label": "Explorer", "path": "explorer.exe" },
+    { 
+      "label": "GitHub", 
+      "type": "Web", 
+      "path": "https://github.com/pulls" 
+    }
   ]
 }
