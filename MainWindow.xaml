@@ -8,11 +8,19 @@
     <Grid>
         <Ellipse Fill="#E61E1E1E" Stroke="#FF00D1FF" StrokeThickness="2" />
 
+        <Path x:Name="SelectionHighlight" 
+              Fill="#4400D1FF" 
+              Stroke="#FF00D1FF" 
+              StrokeThickness="1"
+              Opacity="0"> <Path.Effect>
+                <DropShadowEffect Color="#FF00D1FF" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+            </Path.Effect>
+        </Path>
+
         <Grid x:Name="DynamicLayer" />
 
         <Grid x:Name="StaticLayer">
             <Ellipse Width="80" Height="80" Fill="#FF101010" Stroke="#55FFFFFF" StrokeThickness="1"/>
-            
             <TextBlock x:Name="CenterLabel" 
                        Text="Ready" 
                        HorizontalAlignment="Center" 

@@ -9,8 +9,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using QuickWheel.Core;   // Use the new Core folder
-using QuickWheel.Models; // Use the new Models folder
+using QuickWheel.Core;
+using QuickWheel.Models;
+using System.Windows.Media.Effects;
 
 namespace QuickWheel
 {
@@ -88,6 +89,7 @@ namespace QuickWheel
         {
             // FIX: Only clear the dynamic layer. Do not touch CenterLabel!
             DynamicLayer.Children.Clear();
+            SelectionHighlight.Opacity = 0;
             
             int count = items.Count;
             if (count == 0) return;
@@ -214,9 +216,38 @@ namespace QuickWheel
 
         private void CheckSelection()
         {
-            var slice = GetSelectedSlice();
-            
-            // Safe Update of CenterLabel (It always exists now!)
+            // 1. Calculate Index manually (we need the number, not just the config object)
+            int index = -1;
+            SliceConfig slice = null;
+
+            if (_currentContext.Count > 0)
+            {
+                NativeMethods.Win32Point mousePos;
+                NativeMethods.GetCursorPos(out mousePos);
+                var dpi = GetDpiScale();
+                double centerX = (this.Left + 150) * dpi.X;
+                double centerY = (this.Top + 150) * dpi.Y;
+                double dx = mousePos.X - centerX; 
+                double dy = mousePos.Y - centerY;
+                
+                // Only select if outside deadzone
+                if (Math.Sqrt(dx * dx + dy * dy) > (40 * dpi.X))
+                {
+                    double angle = Math.Atan2(dy, dx) * (180 / Math.PI);
+                    if (angle < 0) angle += 360;
+                    
+                    index = (int)(angle / (360.0 / _currentContext.Count));
+                    if (index >= 0 && index < _currentContext.Count)
+                    {
+                        slice = _currentContext[index];
+                    }
+                }
+            }
+
+            // 2. Update The Glow
+            UpdateHighlight(index, _currentContext.Count);
+
+            // 3. Update Text & Hover Logic (Existing logic)
             CenterLabel.Text = slice?.Label ?? (_navigationStack.Count > 0 ? "Back" : "Cancel");
 
             if (slice != _lastHoveredSlice)
@@ -272,6 +303,56 @@ namespace QuickWheel
             CheckSelection();
         }
 
+        private void UpdateHighlight(int index, int totalCount)
+        {
+            if (index < 0 || totalCount == 0)
+            {
+                SelectionHighlight.Opacity = 0; // Hide if nothing selected
+                return;
+            }
+
+            double radius = 148; // Slightly smaller than window to avoid clipping
+            double center = 150;
+            double sliceAngle = 360.0 / totalCount;
+            
+            // Calculate Start and End Angles
+            double startAngle = index * sliceAngle;
+            double endAngle = (index + 1) * sliceAngle;
+
+            // Convert to Radians
+            double startRad = startAngle * (Math.PI / 180.0);
+            double endRad = endAngle * (Math.PI / 180.0);
+
+            // Calculate Points
+            Point centerPt = new Point(center, center);
+            Point startPt = new Point(center + radius * Math.Cos(startRad), center + radius * Math.Sin(startRad));
+            Point endPt = new Point(center + radius * Math.Cos(endRad), center + radius * Math.Sin(endRad));
+
+            // Create the "Pie Slice" Geometry
+            PathFigure figure = new PathFigure();
+            figure.StartPoint = centerPt;
+            
+            // 1. Line to Start
+            figure.Segments.Add(new LineSegment(startPt, true));
+            
+            // 2. Arc to End
+            figure.Segments.Add(new ArcSegment(
+                endPt, 
+                new Size(radius, radius), 
+                0, 
+                false, // IsLargeArc (always false for slices < 180 deg)
+                SweepDirection.Clockwise, 
+                true));
+            
+            // 3. Line back to Center is implied by PathFigure.IsClosed = true
+
+            PathGeometry geometry = new PathGeometry();
+            geometry.Figures.Add(figure);
+            
+            // Apply to the Highlight Path
+            SelectionHighlight.Data = geometry;
+            SelectionHighlight.Opacity = 1; // Show it
+        }
         private void CenterMouse()
         {
             var dpi = GetDpiScale();
