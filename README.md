@@ -1,4 +1,4 @@
-# 🎡 QuickWheel (MVP)
+# 🎡 QuickWheel
 
 QuickWheel is a lightweight, Windows-only productivity tool that triggers a radial menu (pie menu) at your mouse cursor. It allows for rapid application launching using muscle memory rather than precise clicking.
 
@@ -9,7 +9,7 @@ QuickWheel is a lightweight, Windows-only productivity tool that triggers a radi
 - **Global Hotkey Hook:** Listens for Tab globally (background process).
 - **Input Interception:** "Eats" the trigger key so it doesn't affect active windows (prevents accidental tabbing).
 - **Mouse Trap:** Locks the cursor inside the wheel radius while open to prevent accidental clicks outside.
-- **Quadrant Detection:** Mathematically calculates 4 slices (Top-Right, Bottom-Right, Bottom-Left, Top-Left).
+- **Slice Detection:** Mathematically calculates which slice the mouse is in.
 - **JSON Configuration:** Loads commands dynamically from `settings.json`.
 - **Visual Overlay:** Transparent, borderless WPF window that centers on the cursor.
 
