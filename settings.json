@@ -1,9 +1,16 @@
 {
   "slices": [
-    { "label": "Notepad", "path": "C:\\Windows\\System32\\notepad.exe", "args": "" },
-    { "label": "Calc", "path": "calc.exe", "args": "" },
-    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "args": "" },
-    { "label": "Explorer", "path": "explorer.exe", "args": "" },
-    { "label": "Spotify", "path": "spotify.exe", "args": "" }
+    { "label": "Notepad", "path": "C:\\Windows\\System32\\notepad.exe" },
+    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" },
+    {
+      "label": "Work Tools",
+      "path": "",
+      "items": [
+         { "label": "VS Code", "path": "code.exe" },
+         { "label": "Slack", "path": "slack.exe" },
+         { "label": "Calculator", "path": "calc.exe" }
+      ]
+    },
+    { "label": "Explorer", "path": "explorer.exe" }
   ]
 }
