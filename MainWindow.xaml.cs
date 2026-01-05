@@ -61,7 +61,10 @@ namespace QuickWheel
             if (e.PropertyName == nameof(MainViewModel.CurrentSlices))
             {
                 DrawDynamicWheel(_viewModel.CurrentSlices);
-                CenterMouse();
+                if (this.Visibility == Visibility.Visible)
+                {
+                    CenterMouse();
+                }
             }
             if (e.PropertyName == nameof(MainViewModel.CenterText))
             {
