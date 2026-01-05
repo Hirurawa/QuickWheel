@@ -1,53 +1,69 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls; // For adding TextBlocks/Lines
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes; // For Line/Ellipse
+using System.Windows.Shapes;
 using System.Windows.Threading;
+using QuickWheel.Core;   // Use the new Core folder
+using QuickWheel.Models; // Use the new Models folder
 
 namespace QuickWheel
 {
     public partial class MainWindow : Window
     {
+        // Settings & State
+        private AppSettings _settings;
+        private List<SliceConfig> _currentContext;
+        private Stack<List<SliceConfig>> _navigationStack = new Stack<List<SliceConfig>>();
+        
+        // Logic Vars
         private GlobalKeyboardHook _globalHook;
+        private DispatcherTimer _trapTimer;
+        private DispatcherTimer _hoverTimer;
+        private SliceConfig _lastHoveredSlice = null;
+
+        // Constants
+        private const double WHEEL_RADIUS = 150;
+        private const double DEADZONE_RADIUS = 40;
         private const Key TRIGGER_KEY = Key.Tab;
         private const Key EXIT_KEY = Key.Escape;
-        private DispatcherTimer _trapTimer;
-        
-        private AppSettings _settings;
-        private double _radius = 150;
-        
-        // Dynamic Math Variables
-        private double _sliceAngle; // How big is one slice? (360 / count)
-        
+
         public MainWindow()
         {
             InitializeComponent();
             LoadSettings();
 
-            // Setup Window Position (Warmup)
+            // Warmup Window
             this.Left = -10000;
             this.Top = -10000;
             this.Show();
             this.Hide();
 
-            // Setup Hook
+            // Initialize Hooks & Timers
+            SetupHooks();
+            SetupTimers();
+        }
+
+        private void SetupHooks()
+        {
             _globalHook = new GlobalKeyboardHook();
             _globalHook.OnKeyDown += GlobalHook_OnKeyDown;
             _globalHook.OnKeyUp += GlobalHook_OnKeyUp;
             _globalHook.Hook();
+        }
 
-            // Setup Timer
-            _trapTimer = new DispatcherTimer();
-            _trapTimer.Interval = TimeSpan.FromMilliseconds(10);
+        private void SetupTimers()
+        {
+            _trapTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
             _trapTimer.Tick += TrapMouseInCircle;
+
+            _hoverTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
+            _hoverTimer.Tick += HoverTimer_Tick;
         }
 
         private void LoadSettings()
@@ -60,116 +76,85 @@ namespace QuickWheel
                     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     _settings = JsonSerializer.Deserialize<AppSettings>(json, options);
                 }
-                else
-                {
-                    _settings = new AppSettings(); 
-                }
+                else _settings = new AppSettings();
             }
             catch { _settings = new AppSettings(); }
-
-            // DRAW THE WHEEL DYNAMICALLY
-            DrawDynamicWheel();
+            
+            _currentContext = _settings.Slices;
         }
 
-        private void DrawDynamicWheel()
+        // --- DRAWING ---
+        private void DrawDynamicWheel(List<SliceConfig> items)
         {
-            int count = _settings.Slices.Count;
+            // FIX: Only clear the dynamic layer. Do not touch CenterLabel!
+            DynamicLayer.Children.Clear();
+            
+            int count = items.Count;
             if (count == 0) return;
 
-            // Calculate angle per slice
-            _sliceAngle = 360.0 / count;
-
-            // We want to draw Lines and Labels.
-            // Note: 0 degrees in Math is 3 o'clock (Right). 
-            // We usually want item 1 at the top, but let's keep it simple: Item 1 starts at 0 deg (Right).
+            double sliceAngle = 360.0 / count;
 
             for (int i = 0; i < count; i++)
             {
-                // 1. Draw Separator Line (at the start of the slice)
-                double angleRad = (i * _sliceAngle) * (Math.PI / 180.0);
-                
-                // Calculate end point of the line (start is center 150,150)
-                double x = 150 + 150 * Math.Cos(angleRad);
-                double y = 150 + 150 * Math.Sin(angleRad);
-
+                // 1. Divider Line
+                double angleRad = (i * sliceAngle) * (Math.PI / 180.0);
                 Line div = new Line
                 {
-                    X1 = 150, Y1 = 150,
-                    X2 = x, Y2 = y,
-                    Stroke = new SolidColorBrush(Color.FromArgb(80, 255, 255, 255)), // Faint white
+                    X1 = WHEEL_RADIUS, Y1 = WHEEL_RADIUS,
+                    X2 = WHEEL_RADIUS + WHEEL_RADIUS * Math.Cos(angleRad),
+                    Y2 = WHEEL_RADIUS + WHEEL_RADIUS * Math.Sin(angleRad),
+                    Stroke = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)),
                     StrokeThickness = 1
                 };
-                
-                // Add line to canvas BEFORE the dead zone (index 0 is the background circle)
-                // We add at index 1 so it sits on top of background
-                WheelCanvas.Children.Insert(1, div);
+                DynamicLayer.Children.Add(div);
 
-                // 2. Draw Label (in the middle of the slice)
-                double midAngle = (i * _sliceAngle) + (_sliceAngle / 2);
+                // 2. Label
+                string text = items[i].Label + ((items[i].Items != null && items[i].Items.Count > 0) ? " >" : "");
+                double midAngle = (i * sliceAngle) + (sliceAngle / 2);
                 double midRad = midAngle * (Math.PI / 180.0);
-
-                // Position text at 100px from center (so it fits inside)
-                double textX = 150 + 100 * Math.Cos(midRad);
-                double textY = 150 + 100 * Math.Sin(midRad);
 
                 TextBlock txt = new TextBlock
                 {
-                    Text = _settings.Slices[i].Label,
+                    Text = text,
                     Foreground = Brushes.White,
-                    FontSize = 14,
-                    FontWeight = FontWeights.Bold
+                    FontSize = 14, FontWeight = FontWeights.Bold,
+                    RenderTransform = new TranslateTransform(-20, -10),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(
+                        WHEEL_RADIUS + 100 * Math.Cos(midRad), 
+                        WHEEL_RADIUS + 100 * Math.Sin(midRad), 0, 0)
                 };
-
-                // Center the text block on that point
-                // We need to measure it roughly to center it, but RenderTransform is easier
-                txt.RenderTransform = new TranslateTransform(-20, -10); // Rough center alignment
-                
-                // Set position using Margin (since we are in a Grid, this is a bit hacky but works for MVP)
-                // Better way: Use Canvas. But Grid works if we set alignment.
-                txt.HorizontalAlignment = HorizontalAlignment.Left;
-                txt.VerticalAlignment = System.Windows.VerticalAlignment.Top;
-                txt.Margin = new Thickness(textX, textY, 0, 0);
-
-                WheelCanvas.Children.Add(txt);
+                DynamicLayer.Children.Add(txt);
             }
         }
 
-        // --- SELECTION LOGIC ---
-        private SliceConfig GetSelectedSlice()
+        // --- INPUT HANDLERS ---
+        private void GlobalHook_OnKeyDown(object sender, GlobalKeyEventArgs e)
         {
-            Win32Point mousePos;
-            GetCursorPos(out mousePos);
-            var dpi = GetDpiScale();
-
-            double centerX = (this.Left + _radius) * dpi.X;
-            double centerY = (this.Top + _radius) * dpi.Y;
-            double dx = mousePos.X - centerX;
-            double dy = mousePos.Y - centerY;
-            double distance = Math.Sqrt(dx * dx + dy * dy);
-
-            // Dead Zone
-            if (distance < (40 * dpi.X)) 
+            if (e.Key == EXIT_KEY) CleanupAndExit();
+            if (e.Key == TRIGGER_KEY)
             {
-                CenterLabel.Text = "";
-                return null;
+                e.Handled = true;
+                if (this.Visibility != Visibility.Visible)
+                {
+                    // Reset State
+                    _currentContext = _settings.Slices;
+                    _navigationStack.Clear();
+                    DrawDynamicWheel(_currentContext);
+
+                    // Move Window
+                    NativeMethods.Win32Point mousePos;
+                    NativeMethods.GetCursorPos(out mousePos);
+                    var dpi = GetDpiScale();
+                    this.Left = (mousePos.X / dpi.X) - WHEEL_RADIUS;
+                    this.Top = (mousePos.Y / dpi.Y) - WHEEL_RADIUS;
+
+                    this.Show(); this.Activate();
+                    _trapTimer.Start();
+                }
+                CheckSelection();
             }
-
-            // Calculate Angle
-            double angle = Math.Atan2(dy, dx) * (180 / Math.PI);
-            if (angle < 0) angle += 360;
-
-            // Math: Index = Floor(Angle / SliceAngle)
-            int index = (int)(angle / _sliceAngle);
-
-            // Safety check
-            if (index >= 0 && index < _settings.Slices.Count)
-            {
-                var slice = _settings.Slices[index];
-                CenterLabel.Text = slice.Label; // Show text in center
-                return slice;
-            }
-            
-            return null;
         }
 
         private void GlobalHook_OnKeyUp(object sender, GlobalKeyEventArgs e)
@@ -178,74 +163,121 @@ namespace QuickWheel
             {
                 e.Handled = true;
                 _trapTimer.Stop();
+                _hoverTimer.Stop();
 
                 var slice = GetSelectedSlice();
-                if (slice != null)
+
+                if (slice == null) // Dead Zone
                 {
-                    Console.WriteLine($"[EXECUTE] {slice.Label}");
-                    RunCommand(slice);
+                    if (_navigationStack.Count > 0) NavigateBack();
+                    else this.Hide();
                 }
-                
-                this.Hide();
-            }
-        }
-        
-         private void GlobalHook_OnKeyDown(object sender, GlobalKeyEventArgs e)
-        {
-            if (e.Key == EXIT_KEY) CleanupAndExit();
-            if (e.Key == TRIGGER_KEY)
-            {
-                e.Handled = true;
-                if (this.Visibility != Visibility.Visible)
+                else if (slice.Items != null && slice.Items.Count > 0) // Enter Folder
                 {
-                    Win32Point mousePos;
-                    GetCursorPos(out mousePos);
-                    var dpi = GetDpiScale();
-                    double wpfX = mousePos.X / dpi.X;
-                    double wpfY = mousePos.Y / dpi.Y;
-                    this.Left = wpfX - _radius;
-                    this.Top = wpfY - _radius;
-                    this.Show();
-                    this.Activate();
+                    NavigateInto(slice);
                     _trapTimer.Start();
                 }
-                // Update center text while holding
-                GetSelectedSlice(); 
+                else // Execute
+                {
+                    RunCommand(slice);
+                    this.Hide();
+                }
             }
         }
 
+        // --- NAVIGATION & LOGIC ---
+        private void HoverTimer_Tick(object sender, EventArgs e)
+        {
+            if (_lastHoveredSlice != null && _lastHoveredSlice.Items?.Count > 0)
+            {
+                _hoverTimer.Stop();
+                NavigateInto(_lastHoveredSlice);
+            }
+        }
+
+        private void NavigateInto(SliceConfig folder)
+        {
+            _navigationStack.Push(_currentContext);
+            _currentContext = folder.Items;
+            DrawDynamicWheel(_currentContext);
+            CenterMouse();
+            Console.WriteLine($"[NAV] Entered {folder.Label}");
+        }
+
+        private void NavigateBack()
+        {
+            _currentContext = _navigationStack.Pop();
+            DrawDynamicWheel(_currentContext);
+            CenterMouse();
+            _trapTimer.Start();
+        }
+
+        private void CheckSelection()
+        {
+            var slice = GetSelectedSlice();
+            
+            // Safe Update of CenterLabel (It always exists now!)
+            CenterLabel.Text = slice?.Label ?? (_navigationStack.Count > 0 ? "Back" : "Cancel");
+
+            if (slice != _lastHoveredSlice)
+            {
+                _lastHoveredSlice = slice;
+                _hoverTimer.Stop();
+                if (slice != null) _hoverTimer.Start();
+            }
+        }
+
+        private SliceConfig GetSelectedSlice()
+        {
+            if (_currentContext.Count == 0) return null;
+
+            NativeMethods.Win32Point mousePos;
+            NativeMethods.GetCursorPos(out mousePos);
+            var dpi = GetDpiScale();
+            double centerX = (this.Left + WHEEL_RADIUS) * dpi.X;
+            double centerY = (this.Top + WHEEL_RADIUS) * dpi.Y;
+            double dx = mousePos.X - centerX; 
+            double dy = mousePos.Y - centerY;
+            
+            if (Math.Sqrt(dx*dx + dy*dy) < (DEADZONE_RADIUS * dpi.X)) return null;
+
+            double angle = Math.Atan2(dy, dx) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
+
+            int index = (int)(angle / (360.0 / _currentContext.Count));
+            if (index >= 0 && index < _currentContext.Count) return _currentContext[index];
+            return null;
+        }
+
+        // --- HELPERS ---
         private void TrapMouseInCircle(object sender, EventArgs e)
         {
             if (this.Visibility != Visibility.Visible) return;
-            Win32Point mousePos;
-            GetCursorPos(out mousePos);
+            
+            NativeMethods.Win32Point mousePos;
+            NativeMethods.GetCursorPos(out mousePos);
             var dpi = GetDpiScale();
-
-            // Calculate Center in Screen Pixels
-            double centerX = (this.Left + _radius) * dpi.X;
-            double centerY = (this.Top + _radius) * dpi.Y;
-
-            // Vector from center to mouse
-            double dx = mousePos.X - centerX;
+            double centerX = (this.Left + WHEEL_RADIUS) * dpi.X;
+            double centerY = (this.Top + WHEEL_RADIUS) * dpi.Y;
+            double dx = mousePos.X - centerX; 
             double dy = mousePos.Y - centerY;
-            double distance = Math.Sqrt(dx * dx + dy * dy);
 
-            // Allowed radius in pixels
-            double allowedRadius = _radius * dpi.X; 
-
-            // If we are outside the circle, pull it back!
-            if (distance > allowedRadius)
+            if (Math.Sqrt(dx * dx + dy * dy) > (WHEEL_RADIUS * dpi.X))
             {
                 double angle = Math.Atan2(dy, dx);
-                
-                // Calculate point on the edge
-                int newX = (int)(centerX + allowedRadius * Math.Cos(angle));
-                int newY = (int)(centerY + allowedRadius * Math.Sin(angle));
-
-                SetCursorPos(newX, newY);
+                NativeMethods.SetCursorPos(
+                    (int)(centerX + (WHEEL_RADIUS * dpi.X) * Math.Cos(angle)),
+                    (int)(centerY + (WHEEL_RADIUS * dpi.X) * Math.Sin(angle)));
             }
-            // Update Center Text while moving
-            GetSelectedSlice();
+            CheckSelection();
+        }
+
+        private void CenterMouse()
+        {
+            var dpi = GetDpiScale();
+            NativeMethods.SetCursorPos(
+                (int)((this.Left + WHEEL_RADIUS) * dpi.X), 
+                (int)((this.Top + WHEEL_RADIUS) * dpi.Y));
         }
 
         private void RunCommand(SliceConfig config)
@@ -256,38 +288,16 @@ namespace QuickWheel
 
         private void CleanupAndExit()
         {
-            _trapTimer.Stop();
-            _globalHook.Unhook();
+            _trapTimer.Stop(); _hoverTimer.Stop(); _globalHook.Unhook();
             Application.Current.Shutdown();
         }
-        
+
         private Point GetDpiScale()
         {
             var source = PresentationSource.FromVisual(this);
-            if (source != null && source.CompositionTarget != null)
-                return new Point(source.CompositionTarget.TransformToDevice.M11, source.CompositionTarget.TransformToDevice.M22);
-            return new Point(1.0, 1.0);
+            return (source?.CompositionTarget != null) 
+                ? new Point(source.CompositionTarget.TransformToDevice.M11, source.CompositionTarget.TransformToDevice.M22) 
+                : new Point(1.0, 1.0);
         }
-
-        [DllImport("user32.dll")]
-        internal static extern bool GetCursorPos(out Win32Point lpPoint);
-        
-        [DllImport("user32.dll")]
-        internal static extern bool SetCursorPos(int X, int Y);
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct Win32Point { public int X; public int Y; };
-    }
-    
-    public class AppSettings
-    {
-        public List<SliceConfig> Slices { get; set; } = new List<SliceConfig>();
-    }
-
-    public class SliceConfig
-    {
-        public string Label { get; set; } // "Notepad"
-        public string Path { get; set; }  // "notepad.exe"
-        public string Args { get; set; }  // Arguments (optional)
     }
 }
