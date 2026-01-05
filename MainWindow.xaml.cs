@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -282,8 +282,37 @@ namespace QuickWheel
 
         private void RunCommand(SliceConfig config)
         {
-            try { Process.Start(new ProcessStartInfo { FileName = config.Path, Arguments = config.Args, UseShellExecute = true }); }
-            catch (Exception ex) { Console.WriteLine($"Error: {ex.Message}"); }
+            try
+            {
+                if (config.Type == SliceType.App)
+                {
+                    Process.Start(new ProcessStartInfo 
+                    { 
+                        FileName = config.Path, 
+                        Arguments = config.Args, 
+                        UseShellExecute = true 
+                    });
+                }
+                else if (config.Type == SliceType.Paste)
+                {
+                    // 1. Set text to Clipboard
+                    Clipboard.SetText(config.Data);
+
+                    // 2. Wait for window to hide and focus to return
+                    // We do this in a separate task so we don't freeze the UI thread while waiting
+                    System.Threading.Tasks.Task.Run(() => 
+                    {
+                        Thread.Sleep(100); // Give Windows 100ms to switch focus back to your text editor
+                        
+                        // 3. Simulate Ctrl+V
+                        InputSender.SendCtrlV();
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error executing {config.Label}: {ex.Message}");
+            }
         }
 
         private void CleanupAndExit()

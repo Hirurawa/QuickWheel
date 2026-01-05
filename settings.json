@@ -1,11 +1,24 @@
 {
   "slices": [
-    { "label": "Notepad", "path": "C:\\Windows\\System32\\notepad.exe" },
+    { 
+      "label": "Notepad", 
+      "type": "App", 
+      "path": "C:\\Windows\\System32\\notepad.exe" 
+    },
     { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" },
-    {
-      "label": "Work Tools",
-      "path": "",
+    { 
+      "label": "Paste Email", 
+      "type": "Paste", 
+      "data": "myname@example.com" 
+    },
+    { 
+      "label": "Work Tools", 
       "items": [
+         { 
+             "label": "Paste Signature", 
+             "type": "Paste", 
+             "data": "Best Regards,\nJohn Doe\nSoftware Engineer" 
+         },
          { "label": "VS Code", "path": "code.exe" },
          { "label": "Slack", "path": "slack.exe" },
          { "label": "Calculator", "path": "calc.exe" }
