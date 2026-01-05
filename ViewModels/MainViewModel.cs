@@ -1,0 +1,231 @@
+using System;
+using System.Collections.Generic;
+using System.Windows.Input;
+using System.Windows.Threading;
+using QuickWheel.Infrastructure;
+using QuickWheel.Interfaces;
+using QuickWheel.Models;
+using QuickWheel.Services;
+
+namespace QuickWheel.ViewModels
+{
+    public class MainViewModel : ViewModelBase
+    {
+        private readonly ILogger _logger;
+        private readonly IInputService _inputService;
+        private readonly ISettingsService _settingsService;
+        private readonly ActionFactory _actionFactory;
+
+        private List<SliceConfig> _currentSlices;
+        private Stack<List<SliceConfig>> _navigationStack;
+        private DispatcherTimer _hoverTimer;
+        private SliceConfig _lastHoveredSlice;
+        private bool _isVisible;
+        private string _centerText;
+
+        public event EventHandler RequestClose;
+        public event EventHandler RequestShow;
+
+        public MainViewModel(
+            ILogger logger,
+            IInputService inputService,
+            ISettingsService settingsService,
+            ActionFactory actionFactory)
+        {
+            _logger = logger;
+            _inputService = inputService;
+            _settingsService = settingsService;
+            _actionFactory = actionFactory;
+
+            _navigationStack = new Stack<List<SliceConfig>>();
+            _inputService.OnKeyDown += OnKeyDown;
+            _inputService.OnKeyUp += OnKeyUp;
+
+            _hoverTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Constants.HoverIntervalMs) };
+            _hoverTimer.Tick += HoverTimer_Tick;
+
+            LoadSettings();
+        }
+
+        public List<SliceConfig> CurrentSlices
+        {
+            get => _currentSlices;
+            set => SetProperty(ref _currentSlices, value);
+        }
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set => SetProperty(ref _isVisible, value);
+        }
+
+        public string CenterText
+        {
+            get => _centerText;
+            set => SetProperty(ref _centerText, value);
+        }
+
+        public void Initialize()
+        {
+            _inputService.Enable();
+            _logger.Log("MainViewModel Initialized and Input Service Enabled.");
+        }
+
+        private void LoadSettings()
+        {
+            var settings = _settingsService.LoadSettings();
+            _currentSlices = settings.Slices;
+        }
+
+        private void OnKeyDown(object sender, InputEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                Shutdown();
+            }
+            if (e.Key == Key.Tab)
+            {
+                e.Handled = true;
+                if (!IsVisible)
+                {
+                    ResetState();
+                    IsVisible = true;
+                    RequestShow?.Invoke(this, EventArgs.Empty);
+                }
+                // Trigger selection check (usually handled by View polling or mouse movement,
+                // but here we just ensure state is ready)
+            }
+        }
+
+        private void OnKeyUp(object sender, InputEventArgs e)
+        {
+            if (e.Key == Key.Tab)
+            {
+                e.Handled = true;
+                _hoverTimer.Stop();
+
+                // Logic relies on the View telling us what is selected,
+                // OR we calculate it here if we have mouse pos.
+                // For MVVM purity, the View should bind the "SelectedIndex" or "SelectedSlice" to VM.
+                // However, since we are refactoring, let's assume the View will call a method on VM
+                // or we update SelectedSlice property.
+
+                ExecuteCurrentSelection();
+            }
+        }
+
+        private SliceConfig _selectedSlice;
+        public SliceConfig SelectedSlice
+        {
+            get => _selectedSlice;
+            set
+            {
+                if (SetProperty(ref _selectedSlice, value))
+                {
+                    UpdateCenterText();
+                    HandleHoverLogic();
+                }
+            }
+        }
+
+        private void UpdateCenterText()
+        {
+            if (SelectedSlice != null)
+                CenterText = SelectedSlice.Label;
+            else
+                CenterText = _navigationStack.Count > 0 ? "Back" : "Cancel";
+        }
+
+        private void HandleHoverLogic()
+        {
+            if (SelectedSlice != _lastHoveredSlice)
+            {
+                _lastHoveredSlice = SelectedSlice;
+                _hoverTimer.Stop();
+                if (SelectedSlice != null && SelectedSlice.Items?.Count > 0)
+                {
+                    _hoverTimer.Start();
+                }
+            }
+        }
+
+        private void HoverTimer_Tick(object sender, EventArgs e)
+        {
+            if (_lastHoveredSlice != null && _lastHoveredSlice.Items?.Count > 0)
+            {
+                _hoverTimer.Stop();
+                NavigateInto(_lastHoveredSlice);
+            }
+        }
+
+        private void NavigateInto(SliceConfig folder)
+        {
+            _navigationStack.Push(CurrentSlices);
+            CurrentSlices = folder.Items;
+            _logger.Log($"Navigated into {folder.Label}");
+
+            // In a real MVVM with ItemsControl, the View updates automatically.
+            // Since we use manual drawing in View, PropertyChanged on CurrentSlices triggers redraw.
+        }
+
+        private void NavigateBack()
+        {
+            if (_navigationStack.Count > 0)
+            {
+                CurrentSlices = _navigationStack.Pop();
+            }
+        }
+
+        private void ExecuteCurrentSelection()
+        {
+            var slice = SelectedSlice;
+
+            if (slice == null) // Dead Zone
+            {
+                if (_navigationStack.Count > 0)
+                    NavigateBack();
+                else
+                    HideWindow();
+            }
+            else if (slice.Items != null && slice.Items.Count > 0) // Enter Folder
+            {
+                NavigateInto(slice);
+            }
+            else // Execute
+            {
+                HideWindow();
+                try
+                {
+                    _actionFactory.Execute(slice);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error executing slice {slice.Label}", ex);
+                }
+            }
+        }
+
+        private void ResetState()
+        {
+            var settings = _settingsService.LoadSettings(); // Reload in case it changed
+            _currentSlices = settings.Slices;
+            // Force notify
+            OnPropertyChanged(nameof(CurrentSlices));
+
+            _navigationStack.Clear();
+            SelectedSlice = null;
+        }
+
+        private void HideWindow()
+        {
+            IsVisible = false;
+            RequestClose?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void Shutdown()
+        {
+            _inputService.Disable();
+            System.Windows.Application.Current.Shutdown();
+        }
+    }
+}
