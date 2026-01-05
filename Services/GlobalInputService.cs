@@ -9,21 +9,21 @@ namespace QuickWheel.Services
         private readonly GlobalKeyboardHook _hook;
         private bool _isEnabled;
 
-        public event EventHandler<InputEventArgs> OnKeyDown;
-        public event EventHandler<InputEventArgs> OnKeyUp;
+        public event EventHandler<GlobalInputEventArgs> OnKeyDown;
+        public event EventHandler<GlobalInputEventArgs> OnKeyUp;
 
         public GlobalInputService()
         {
             _hook = new GlobalKeyboardHook();
             _hook.OnKeyDown += (s, e) =>
             {
-                var args = new InputEventArgs(e.Key);
+                var args = new GlobalInputEventArgs(e.Key);
                 OnKeyDown?.Invoke(this, args);
                 e.Handled = args.Handled;
             };
             _hook.OnKeyUp += (s, e) =>
             {
-                var args = new InputEventArgs(e.Key);
+                var args = new GlobalInputEventArgs(e.Key);
                 OnKeyUp?.Invoke(this, args);
                 e.Handled = args.Handled;
             };

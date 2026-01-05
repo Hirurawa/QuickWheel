@@ -19,7 +19,7 @@ namespace QuickWheel.Services
             catch { /* Best effort */ }
         }
 
-        public void LogError(string message, Exception ex = null)
+        public void LogError(string message, Exception? ex = null)
         {
             try
             {

@@ -77,7 +77,7 @@ namespace QuickWheel.ViewModels
             _currentSlices = settings.Slices;
         }
 
-        private void OnKeyDown(object sender, InputEventArgs e)
+        private void OnKeyDown(object sender, GlobalInputEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -92,24 +92,15 @@ namespace QuickWheel.ViewModels
                     IsVisible = true;
                     RequestShow?.Invoke(this, EventArgs.Empty);
                 }
-                // Trigger selection check (usually handled by View polling or mouse movement,
-                // but here we just ensure state is ready)
             }
         }
 
-        private void OnKeyUp(object sender, InputEventArgs e)
+        private void OnKeyUp(object sender, GlobalInputEventArgs e)
         {
             if (e.Key == Key.Tab)
             {
                 e.Handled = true;
                 _hoverTimer.Stop();
-
-                // Logic relies on the View telling us what is selected,
-                // OR we calculate it here if we have mouse pos.
-                // For MVVM purity, the View should bind the "SelectedIndex" or "SelectedSlice" to VM.
-                // However, since we are refactoring, let's assume the View will call a method on VM
-                // or we update SelectedSlice property.
-
                 ExecuteCurrentSelection();
             }
         }
@@ -163,9 +154,6 @@ namespace QuickWheel.ViewModels
             _navigationStack.Push(CurrentSlices);
             CurrentSlices = folder.Items;
             _logger.Log($"Navigated into {folder.Label}");
-
-            // In a real MVVM with ItemsControl, the View updates automatically.
-            // Since we use manual drawing in View, PropertyChanged on CurrentSlices triggers redraw.
         }
 
         private void NavigateBack()
@@ -207,9 +195,8 @@ namespace QuickWheel.ViewModels
 
         private void ResetState()
         {
-            var settings = _settingsService.LoadSettings(); // Reload in case it changed
+            var settings = _settingsService.LoadSettings();
             _currentSlices = settings.Slices;
-            // Force notify
             OnPropertyChanged(nameof(CurrentSlices));
 
             _navigationStack.Clear();

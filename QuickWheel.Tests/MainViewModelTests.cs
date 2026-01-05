@@ -10,11 +10,11 @@ namespace QuickWheel.Tests
 {
     public class MainViewModelTests
     {
-        private class MockLogger : ILogger { public void Log(string m) { } public void LogError(string m, Exception e) { } }
+        private class MockLogger : ILogger { public void Log(string m) { } public void LogError(string m, Exception? e) { } }
         private class MockInput : IInputService
         {
-            public event EventHandler<InputEventArgs> OnKeyDown;
-            public event EventHandler<InputEventArgs> OnKeyUp;
+            public event EventHandler<GlobalInputEventArgs> OnKeyDown;
+            public event EventHandler<GlobalInputEventArgs> OnKeyUp;
             public void Enable() { }
             public void Disable() { }
         }
