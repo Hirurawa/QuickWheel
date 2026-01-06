@@ -19,6 +19,7 @@ QuickWheel is a lightweight, Windows-only productivity tool that triggers a radi
 
 - Windows 10 or 11
 - .NET SDK 8.0 (or 6.0+)
+- dotnet add package Hardcodet.NotifyIcon.Wpf --version 1.1.0
 
 ---
 
