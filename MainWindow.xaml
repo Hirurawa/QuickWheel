@@ -1,11 +1,22 @@
 <Window x:Class="QuickWheel.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         Title="QuickWheel" Height="300" Width="300"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False">
 
     <Grid>
+        <tb:TaskbarIcon x:Name="MyNotifyIcon"
+                        ToolTipText="QuickWheel is running"
+                        IconSource="/Assets/app.ico">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Exit QuickWheel" Click="Exit_Click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+
         <Ellipse Fill="#E61E1E1E" Stroke="#FF00D1FF" StrokeThickness="2" />
 
         <Path x:Name="SelectionHighlight" 

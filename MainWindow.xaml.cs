@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -245,6 +245,11 @@ namespace QuickWheel
             return (source?.CompositionTarget != null) 
                 ? new Point(source.CompositionTarget.TransformToDevice.M11, source.CompositionTarget.TransformToDevice.M22) 
                 : new Point(1.0, 1.0);
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
         }
     }
 }
