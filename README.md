@@ -49,11 +49,36 @@ Modify `settings.json` in the root directory to change shortcuts.
 ```json
 {
   "slices": [
-    { "label": "Notepad", "path": "C:\\Windows\\System32\\notepad.exe", "args": "" },
-    { "label": "Calc", "path": "calc.exe", "args": "" },
-    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "args": "" },
-    { "label": "Explorer", "path": "explorer.exe", "args": "" },
-    { "label": "Spotify", "path": "spotify.exe", "args": "" }
+    { 
+      "label": "Notepad", 
+      "type": "App", 
+      "path": "C:\\Windows\\System32\\notepad.exe" 
+    },
+    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" },
+    { 
+      "label": "Paste Email", 
+      "type": "Paste", 
+      "data": "myname@example.com" 
+    },
+    { 
+      "label": "Work Tools", 
+      "items": [
+         { 
+             "label": "Paste Signature", 
+             "type": "Paste", 
+             "data": "Best Regards,\nJohn Doe\nSoftware Engineer" 
+         },
+         { "label": "VS Code", "path": "code.exe" },
+         { "label": "Slack", "path": "slack.exe" },
+         { "label": "Calculator", "path": "calc.exe" }
+      ]
+    },
+    { "label": "Explorer", "path": "explorer.exe" },
+    { 
+      "label": "GitHub", 
+      "type": "Web", 
+      "path": "https://github.com/pulls" 
+    }
   ]
 }
 ```
@@ -64,7 +89,6 @@ Modify `settings.json` in the root directory to change shortcuts.
 
 ## 🔧 Troubleshooting
 
-- **Logs not showing:** Ensure `<OutputType>Exe</OutputType>` is set in the `.csproj` file.
 - **Mouse "Jitter":** The cursor trap fights the OS mouse driver ~100 times/second. Slight jitter at the edge is expected behavior.
 - **App won't close:** Press `ESC` to force-quit the application and release the mouse hook.
 
@@ -72,6 +96,5 @@ Modify `settings.json` in the root directory to change shortcuts.
 
 ## 🗺️ Roadmap (Next Steps)
 
-- [ ] **Dynamic UI:** Make the text labels (XAML) update automatically based on the JSON file.
 - [ ] **Icons:** Replace text with file icons or SVGs.
 - [ ] **Context Awareness:** Load different JSON profiles based on the active window (e.g., Chrome vs. Excel).
