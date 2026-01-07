@@ -19,6 +19,7 @@ namespace QuickWheel
     {
         private MainViewModel _viewModel;
         private DispatcherTimer _trapTimer;
+        private List<StackPanel> _slicePanels = new List<StackPanel>();
 
         public MainWindow()
         {
@@ -87,13 +88,14 @@ namespace QuickWheel
         {
             DynamicLayer.Children.Clear();
             SelectionHighlight.Opacity = 0;
+            _slicePanels.Clear();
             
             if (items == null) return;
             int count = items.Count;
             if (count == 0) return;
 
             double sliceAngle = 360.0 / count;
-
+            
             for (int i = 0; i < count; i++)
             {
                 // 1. Divider Line
@@ -170,7 +172,8 @@ namespace QuickWheel
                         p.RenderTransform = new TranslateTransform(-p.ActualWidth / 2, -p.ActualHeight / 2);
                     }
                 };
-
+                
+                _slicePanels.Add(panel);
                 DynamicLayer.Children.Add(panel);
             }
         }
@@ -229,6 +232,7 @@ namespace QuickWheel
             }
 
             UpdateHighlight(index, count);
+            UpdateLabelVisuals(index);
         }
 
         private void UpdateHighlight(int index, int totalCount)
@@ -269,6 +273,57 @@ namespace QuickWheel
             
             SelectionHighlight.Data = geometry;
             SelectionHighlight.Opacity = 1;
+        }
+
+        private void UpdateLabelVisuals(int activeIndex)
+        {
+            for (int i = 0; i < _slicePanels.Count; i++)
+            {
+                var panel = _slicePanels[i];
+                
+                TextBlock textBlock = null;
+                foreach (var child in panel.Children)
+                {
+                    if (child is TextBlock tb)
+                    {
+                        textBlock = tb;
+                        break;
+                    }
+                }
+
+                if (i == activeIndex)
+                {
+                    // ACTIVE: Add Neon Glow
+                    panel.Effect = new DropShadowEffect
+                    {
+                        Color = Color.FromRgb(255, 180, 0),
+                        //Color = Color.FromRgb(255, 20, 147), // Cyberpunk Pink (DeepPink)
+                        //Color = Color.FromRgb(57, 255, 20), // Electric Lime
+                        BlurRadius = 15,
+                        ShadowDepth = 0,
+                        Opacity = 1
+                    };
+                    
+                    panel.Opacity = 1.0;
+                    if (textBlock != null) 
+                        //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0, 209, 255));
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 180, 0));
+                        //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 20, 147));
+                        //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(57, 255, 20));
+                }
+                else
+                {
+                    // INACTIVE: Remove Glow
+                    panel.Effect = null;
+                    
+                    // Optional: Dim the inactive ones slightly for contrast
+                    panel.Opacity = 0.6;
+                    
+                    if (textBlock != null) 
+                        //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 180)); // Light Gray
+                        textBlock.Foreground = Brushes.White;
+                }
+            }
         }
 
         private void PositionWindowAtMouse()
