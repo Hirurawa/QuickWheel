@@ -20,10 +20,8 @@ namespace QuickWheel.Models
     public class SliceConfig
     {
         public string Label { get; set; }
-        
-        // This defaults to "App" if missing in JSON
-        public SliceType Type { get; set; } = SliceType.App; 
-        
+        public string Icon { get; set; }
+        public SliceType Type { get; set; } = SliceType.App; // This defaults to "App" if missing in JSON
         public string Path { get; set; }
         public string Args { get; set; }
         public string Data { get; set; }  // For Paste text

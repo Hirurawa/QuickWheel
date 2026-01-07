@@ -5,7 +5,7 @@
       "type": "App", 
       "path": "C:\\Windows\\System32\\notepad.exe" 
     },
-    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" },
+    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "icon": "Assets/chrome.png" },
     { 
       "label": "Paste Email", 
       "type": "Paste", 

@@ -17,7 +17,11 @@
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
 
-        <Ellipse Fill="#E61E1E1E" Stroke="#FF00D1FF" StrokeThickness="2" />
+        <Ellipse Fill="#F01E1E1E" Stroke="#33FFFFFF" StrokeThickness="1">
+            <Ellipse.Effect>
+                <DropShadowEffect Color="Black" Direction="270" ShadowDepth="5" BlurRadius="20" Opacity="0.5"/>
+            </Ellipse.Effect>
+        </Ellipse>
 
         <Path x:Name="SelectionHighlight" 
               Fill="#4400D1FF" 
