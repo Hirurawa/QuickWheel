@@ -19,66 +19,99 @@ QuickWheel is a lightweight, Windows-only productivity tool that triggers a radi
 
 - Windows 10 or 11
 - .NET SDK 8.0 (or 6.0+)
-- dotnet add package Hardcodet.NotifyIcon.Wpf --version 1.1.0
+- nuGet package: Hardcodet.NotifyIcon.Wpf
+  ```bash
+  dotnet add package Hardcodet.NotifyIcon.Wpf --version 1.1.0
+   ```
 
 ---
 
 ## 🚀 Setup & Run
 
+1. Download exe file from releases page
+2. Set up folder for the tool
+```text
+  C:\Tools\QuickWheel\
+    ├── QuickWheel.exe
+    ├── settings.json
+    └── Assets\
+          ├── chrome.png
+          ├── notepad.png
+          └── ...
+```
+
+## 🔨 Development
+
 1. Clone/Open the folder in VS Code.
 
 2. **Build:**
-   ```bash
-   dotnet build
-   ```
+    ```bash
+    dotnet build
+    ```
 
 3. **Run:**
-   ```bash
-   dotnet run
-   ```
+    ```bash
+    dotnet run
+    ```
 
-> **Note:** The terminal window must stay open for the app to run in this dev version.
-
+4. **Publish:**
+    ```bash
+    dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+    ```
 ---
 
 ## ⚙️ Configuration (settings.json)
 
 Modify `settings.json` in the root directory to change shortcuts.
 
-> **Note:** You must restart the app (`Ctrl+C` -> `dotnet run`) to apply changes.
-
 ```json
 {
   "slices": [
-    { 
-      "label": "Notepad", 
-      "type": "App", 
-      "path": "C:\\Windows\\System32\\notepad.exe" 
+    {
+      "label": "Notepad",
+      "type": "App",
+      "path": "C:\\Windows\\System32\\notepad.exe"
     },
-    { "label": "Chrome", "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" },
-    { 
-      "label": "Paste Email", 
-      "type": "Paste", 
-      "data": "myname@example.com" 
+    {
+      "label": "Chrome",
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "icon": "Assets/chrome.png"
     },
-    { 
-      "label": "Work Tools", 
+    {
+      "label": "Paste Email",
+      "type": "Paste",
+      "data": "myname@example.com"
+    },
+    {
+      "label": "Work Tools",
       "items": [
-         { 
-             "label": "Paste Signature", 
-             "type": "Paste", 
-             "data": "Best Regards,\nJohn Doe\nSoftware Engineer" 
-         },
-         { "label": "VS Code", "path": "code.exe" },
-         { "label": "Slack", "path": "slack.exe" },
-         { "label": "Calculator", "path": "calc.exe" }
+        {
+          "label": "Paste Signature",
+          "type": "Paste",
+          "data": "Best Regards,\nJohn Doe\nSoftware Engineer"
+        },
+        {
+          "label": "VS Code",
+          "path": "code.exe"
+        },
+        {
+          "label": "Slack",
+          "path": "slack.exe"
+        },
+        {
+          "label": "Calculator",
+          "path": "calc.exe"
+        }
       ]
     },
-    { "label": "Explorer", "path": "explorer.exe" },
-    { 
-      "label": "GitHub", 
-      "type": "Web", 
-      "path": "https://github.com/pulls" 
+    {
+      "label": "Explorer",
+      "path": "explorer.exe"
+    },
+    {
+      "label": "GitHub",
+      "type": "Web",
+      "path": "https://github.com/pulls"
     }
   ]
 }
@@ -97,5 +130,5 @@ Modify `settings.json` in the root directory to change shortcuts.
 
 ## 🗺️ Roadmap (Next Steps)
 
-- [ ] **Icons:** Replace text with file icons or SVGs.
 - [ ] **Context Awareness:** Load different JSON profiles based on the active window (e.g., Chrome vs. Excel).
+- [ ] **Editor UI:** A visual editor interface.
