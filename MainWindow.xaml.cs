@@ -308,7 +308,7 @@ namespace QuickWheel
                 new Size(innerRadius, innerRadius),
                 0,
                 false,
-                SweepDirection.CounterClockwise,
+                SweepDirection.Counterclockwise,
                 true));
             
             PathGeometry geometry = new PathGeometry();
