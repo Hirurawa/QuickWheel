@@ -30,6 +30,36 @@ namespace QuickWheel
             this.Hide();
 
             SetupTimers();
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            EnableBlur();
+        }
+
+        private void EnableBlur()
+        {
+            var windowHelper = new System.Windows.Interop.WindowInteropHelper(this);
+            var accent = new NativeMethods.AccentPolicy
+            {
+                AccentState = NativeMethods.AccentState.ACCENT_ENABLE_BLURBEHIND
+            };
+
+            var accentStructSize = System.Runtime.InteropServices.Marshal.SizeOf(accent);
+            var accentPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(accentStructSize);
+            System.Runtime.InteropServices.Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new NativeMethods.WindowCompositionAttributeData
+            {
+                Attribute = NativeMethods.WindowCompositionAttribute.WCA_ACCENT_POLICY,
+                SizeOfData = accentStructSize,
+                Data = accentPtr
+            };
+
+            NativeMethods.SetWindowCompositionAttribute(windowHelper.Handle, ref data);
+
+            System.Runtime.InteropServices.Marshal.FreeHGlobal(accentPtr);
 
             this.DataContextChanged += (s, e) =>
             {
@@ -45,8 +75,19 @@ namespace QuickWheel
                     _viewModel.RequestShow += (sender, args) =>
                     {
                         PositionWindowAtMouse();
+
+                        // Reset Scale
+                        WindowScale.ScaleX = 0;
+                        WindowScale.ScaleY = 0;
+
                         this.Show();
                         this.Activate();
+
+                        // Animate Scale
+                        var anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(100));
+                        WindowScale.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
+                        WindowScale.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
+
                         DrawDynamicWheel(_viewModel.CurrentSlices);
                         _trapTimer.Start();
                     };
@@ -99,7 +140,8 @@ namespace QuickWheel
                 double angleRad = (i * sliceAngle) * (Math.PI / 180.0);
                 Line div = new Line
                 {
-                    X1 = Constants.WheelRadius, Y1 = Constants.WheelRadius,
+                    X1 = Constants.WheelRadius + Constants.InnerRadius * Math.Cos(angleRad),
+                    Y1 = Constants.WheelRadius + Constants.InnerRadius * Math.Sin(angleRad),
                     X2 = Constants.WheelRadius + Constants.WheelRadius * Math.Cos(angleRad),
                     Y2 = Constants.WheelRadius + Constants.WheelRadius * Math.Sin(angleRad),
                     Stroke = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)),
@@ -231,6 +273,7 @@ namespace QuickWheel
             }
 
             double radius = Constants.WheelRadius - 2;
+            double innerRadius = Constants.InnerRadius;
             double center = Constants.WheelRadius;
             double sliceAngle = 360.0 / totalCount;
             
@@ -240,19 +283,32 @@ namespace QuickWheel
             double startRad = startAngle * (Math.PI / 180.0);
             double endRad = endAngle * (Math.PI / 180.0);
 
-            Point centerPt = new Point(center, center);
-            Point startPt = new Point(center + radius * Math.Cos(startRad), center + radius * Math.Sin(startRad));
-            Point endPt = new Point(center + radius * Math.Cos(endRad), center + radius * Math.Sin(endRad));
+            // 1. Inner Arc Start (at Start Angle)
+            Point innerStart = new Point(center + innerRadius * Math.Cos(startRad), center + innerRadius * Math.Sin(startRad));
+            // 2. Outer Arc Start (at Start Angle)
+            Point outerStart = new Point(center + radius * Math.Cos(startRad), center + radius * Math.Sin(startRad));
+            // 3. Outer Arc End (at End Angle)
+            Point outerEnd = new Point(center + radius * Math.Cos(endRad), center + radius * Math.Sin(endRad));
+            // 4. Inner Arc End (at End Angle)
+            Point innerEnd = new Point(center + innerRadius * Math.Cos(endRad), center + innerRadius * Math.Sin(endRad));
 
             PathFigure figure = new PathFigure();
-            figure.StartPoint = centerPt;
-            figure.Segments.Add(new LineSegment(startPt, true));
+            figure.StartPoint = innerStart;
+            figure.Segments.Add(new LineSegment(outerStart, true));
             figure.Segments.Add(new ArcSegment(
-                endPt, 
+                outerEnd,
                 new Size(radius, radius), 
                 0, 
                 false,
                 SweepDirection.Clockwise, 
+                true));
+            figure.Segments.Add(new LineSegment(innerEnd, true));
+            figure.Segments.Add(new ArcSegment(
+                innerStart,
+                new Size(innerRadius, innerRadius),
+                0,
+                false,
+                SweepDirection.CounterClockwise,
                 true));
             
             PathGeometry geometry = new PathGeometry();

@@ -6,7 +6,11 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False">
 
-    <Grid>
+    <Grid RenderTransformOrigin="0.5,0.5">
+        <Grid.RenderTransform>
+            <ScaleTransform x:Name="WindowScale" ScaleX="1" ScaleY="1" />
+        </Grid.RenderTransform>
+
         <tb:TaskbarIcon x:Name="MyNotifyIcon"
                         ToolTipText="QuickWheel is running"
                         IconSource="/Assets/app.ico">
@@ -17,7 +21,7 @@
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
 
-        <Ellipse Fill="#F01E1E1E" Stroke="#33FFFFFF" StrokeThickness="1">
+        <Ellipse Fill="#201E1E1E" Stroke="#33FFFFFF" StrokeThickness="1">
             <Ellipse.Effect>
                 <DropShadowEffect Color="Black" Direction="270" ShadowDepth="5" BlurRadius="20" Opacity="0.5"/>
             </Ellipse.Effect>
