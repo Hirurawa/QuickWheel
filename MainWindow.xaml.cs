@@ -36,11 +36,14 @@ namespace QuickWheel
         {
             base.OnSourceInitialized(e);
             EnableBlur();
+            this.SizeChanged += (s, ev) => UpdateWindowRegion();
             UpdateWindowRegion();
         }
 
         private void UpdateWindowRegion()
         {
+            if (this.ActualWidth <= 0 || this.ActualHeight <= 0) return;
+
             var dpi = GetDpiScale();
             int width = (int)(this.ActualWidth * dpi.X);
             int height = (int)(this.ActualHeight * dpi.Y);
@@ -92,7 +95,8 @@ namespace QuickWheel
                     _viewModel.RequestShow += (sender, args) =>
                     {
                         UpdateWindowRegion();
-                        this.Opacity = 0;
+                        // Opacity is already 0 from XAML/Previous close
+
                         PositionWindowAtMouse();
 
                         // Reset Scale
