@@ -7,6 +7,7 @@
         Topmost="True" ShowInTaskbar="False">
 
     <Grid>
+
         <tb:TaskbarIcon x:Name="MyNotifyIcon"
                         ToolTipText="QuickWheel is running"
                         IconSource="/Assets/app.ico">
@@ -17,11 +18,7 @@
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
 
-        <Ellipse Fill="#F01E1E1E" Stroke="#33FFFFFF" StrokeThickness="1">
-            <Ellipse.Effect>
-                <DropShadowEffect Color="Black" Direction="270" ShadowDepth="5" BlurRadius="20" Opacity="0.5"/>
-            </Ellipse.Effect>
-        </Ellipse>
+        <Ellipse Fill="#F01E1E1E" Stroke="#33FFFFFF" StrokeThickness="1" />
 
         <Path x:Name="SelectionHighlight" 
               Fill="#4400D1FF" 

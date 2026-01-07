@@ -99,7 +99,8 @@ namespace QuickWheel
                 double angleRad = (i * sliceAngle) * (Math.PI / 180.0);
                 Line div = new Line
                 {
-                    X1 = Constants.WheelRadius, Y1 = Constants.WheelRadius,
+                    X1 = Constants.WheelRadius + Constants.InnerRadius * Math.Cos(angleRad),
+                    Y1 = Constants.WheelRadius + Constants.InnerRadius * Math.Sin(angleRad),
                     X2 = Constants.WheelRadius + Constants.WheelRadius * Math.Cos(angleRad),
                     Y2 = Constants.WheelRadius + Constants.WheelRadius * Math.Sin(angleRad),
                     Stroke = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)),
