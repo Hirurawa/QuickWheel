@@ -10,6 +10,7 @@ using QuickWheel.Infrastructure;
 using QuickWheel.Models;
 using QuickWheel.ViewModels;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Effects;
 using System.IO;
 
 namespace QuickWheel
@@ -99,10 +100,10 @@ namespace QuickWheel
                 double angleRad = (i * sliceAngle) * (Math.PI / 180.0);
                 Line div = new Line
                 {
-                    X1 = Constants.WheelRadius + Constants.InnerRadius * Math.Cos(angleRad),
-                    Y1 = Constants.WheelRadius + Constants.InnerRadius * Math.Sin(angleRad),
-                    X2 = Constants.WheelRadius + Constants.WheelRadius * Math.Cos(angleRad),
-                    Y2 = Constants.WheelRadius + Constants.WheelRadius * Math.Sin(angleRad),
+                    X1 = Constants.WheelCenter + Constants.InnerRadius * Math.Cos(angleRad),
+                    Y1 = Constants.WheelCenter + Constants.InnerRadius * Math.Sin(angleRad),
+                    X2 = Constants.WheelCenter + Constants.WheelRadius * Math.Cos(angleRad),
+                    Y2 = Constants.WheelCenter + Constants.WheelRadius * Math.Sin(angleRad),
                     Stroke = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)),
                     StrokeThickness = 1
                 };
@@ -112,9 +113,11 @@ namespace QuickWheel
                 double midAngle = (i * sliceAngle) + (sliceAngle / 2);
                 double midRad = midAngle * (Math.PI / 180.0);
                 
+                double distanceFromCenter = 90;
+
                 // Move content out to 115px from center
-                double contentX = Constants.WheelRadius + 115 * Math.Cos(midRad);
-                double contentY = Constants.WheelRadius + 115 * Math.Sin(midRad);
+                double contentX = Constants.WheelCenter + distanceFromCenter * Math.Cos(midRad);
+                double contentY = Constants.WheelCenter + distanceFromCenter * Math.Sin(midRad);
 
                 // 3. ICON or TEXT?
                 var slice = items[i];
@@ -147,21 +150,26 @@ namespace QuickWheel
                 {
                     Text = slice.Label,
                     Foreground = Brushes.White,
-                    FontSize = 12, // Slightly smaller since we have icons
+                    FontSize = 12,
                     FontWeight = FontWeights.SemiBold,
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 panel.Children.Add(txt);
 
-                // 4. Position the Panel
-                // We use RenderTransform to center the panel exactly on the calculated point
-                panel.RenderTransform = new TranslateTransform(-20, -20); // Rough centering offset
-                
-                // Note: To center perfectly dynamically, we'd use a Canvas.SetLeft/Top, 
-                // but Margins work if we set alignment to Top/Left on the container.
+                // 4. Position the Panel                
                 panel.HorizontalAlignment = HorizontalAlignment.Left;
                 panel.VerticalAlignment = VerticalAlignment.Top;
                 panel.Margin = new Thickness(contentX, contentY, 0, 0);
+
+                panel.RenderTransformOrigin = new Point(0.5, 0.5);
+                panel.Loaded += (s, e) =>
+                {
+                    if (s is StackPanel p)
+                    {
+                        // Shift Left by 50% of Width, Up by 50% of Height
+                        p.RenderTransform = new TranslateTransform(-p.ActualWidth / 2, -p.ActualHeight / 2);
+                    }
+                };
 
                 DynamicLayer.Children.Add(panel);
             }
@@ -175,8 +183,8 @@ namespace QuickWheel
             NativeMethods.Win32Point mousePos;
             NativeMethods.GetCursorPos(out mousePos);
             var dpi = GetDpiScale();
-            double centerX = (this.Left + Constants.WheelRadius) * dpi.X;
-            double centerY = (this.Top + Constants.WheelRadius) * dpi.Y;
+            double centerX = (this.Left + Constants.WheelCenter) * dpi.X;
+            double centerY = (this.Top + Constants.WheelCenter) * dpi.Y;
             double dx = mousePos.X - centerX;
             double dy = mousePos.Y - centerY;
 
@@ -232,7 +240,7 @@ namespace QuickWheel
             }
 
             double radius = Constants.WheelRadius - 2;
-            double center = Constants.WheelRadius;
+            double center = Constants.WheelCenter;
             double sliceAngle = 360.0 / totalCount;
             
             double startAngle = index * sliceAngle;
@@ -268,16 +276,16 @@ namespace QuickWheel
             NativeMethods.Win32Point mousePos;
             NativeMethods.GetCursorPos(out mousePos);
             var dpi = GetDpiScale();
-            this.Left = (mousePos.X / dpi.X) - Constants.WheelRadius;
-            this.Top = (mousePos.Y / dpi.Y) - Constants.WheelRadius;
+            this.Left = (mousePos.X / dpi.X) - Constants.WheelCenter;
+            this.Top = (mousePos.Y / dpi.Y) - Constants.WheelCenter;
         }
         
         private void CenterMouse()
         {
             var dpi = GetDpiScale();
             NativeMethods.SetCursorPos(
-                (int)((this.Left + Constants.WheelRadius) * dpi.X),
-                (int)((this.Top + Constants.WheelRadius) * dpi.Y));
+                (int)((this.Left + Constants.WheelCenter) * dpi.X),
+                (int)((this.Top + Constants.WheelCenter) * dpi.Y));
         }
 
         private Point GetDpiScale()
