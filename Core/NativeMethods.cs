@@ -48,6 +48,12 @@ namespace QuickWheel.Core
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
+        [DllImport("gdi32.dll")]
+        internal static extern IntPtr CreateEllipticRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct WindowCompositionAttributeData
         {

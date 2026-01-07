@@ -36,6 +36,23 @@ namespace QuickWheel
         {
             base.OnSourceInitialized(e);
             EnableBlur();
+            UpdateWindowRegion();
+        }
+
+        private void UpdateWindowRegion()
+        {
+            var dpi = GetDpiScale();
+            int width = (int)(this.ActualWidth * dpi.X);
+            int height = (int)(this.ActualHeight * dpi.Y);
+
+            // Create Elliptic Region
+            // CreateEllipticRgn takes (nLeftRect, nTopRect, nRightRect, nBottomRect)
+            // Coordinates are bounding box.
+            IntPtr hRgn = NativeMethods.CreateEllipticRgn(0, 0, width, height);
+
+            // SetWindowRgn transfers ownership
+            var helper = new System.Windows.Interop.WindowInteropHelper(this);
+            NativeMethods.SetWindowRgn(helper.Handle, hRgn, true);
         }
 
         private void EnableBlur()
@@ -74,6 +91,8 @@ namespace QuickWheel
                     };
                     _viewModel.RequestShow += (sender, args) =>
                     {
+                        UpdateWindowRegion();
+                        this.Opacity = 0;
                         PositionWindowAtMouse();
 
                         // Reset Scale
@@ -87,6 +106,10 @@ namespace QuickWheel
                         var anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(100));
                         WindowScale.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
                         WindowScale.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
+
+                        // Animate Opacity
+                        var fadeAnim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(100));
+                        this.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
 
                         DrawDynamicWheel(_viewModel.CurrentSlices);
                         _trapTimer.Start();
@@ -308,7 +331,7 @@ namespace QuickWheel
                 new Size(innerRadius, innerRadius),
                 0,
                 false,
-                SweepDirection.Counterclockwise,
+                SweepDirection.CounterClockwise,
                 true));
             
             PathGeometry geometry = new PathGeometry();
