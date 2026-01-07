@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Diagnostics;
 using QuickWheel.Interfaces;
 
 namespace QuickWheel.Services
@@ -10,6 +11,7 @@ namespace QuickWheel.Services
 
         public void Log(string message)
         {
+#if DEBUG
             try
             {
                 string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [INFO] {message}";
@@ -17,10 +19,12 @@ namespace QuickWheel.Services
                 File.AppendAllText(_logPath, line + Environment.NewLine);
             }
             catch { /* Best effort */ }
+#endif
         }
 
         public void LogError(string message, Exception? ex = null)
         {
+#if DEBUG
             try
             {
                 string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [ERROR] {message} {ex?.Message}";
@@ -32,6 +36,7 @@ namespace QuickWheel.Services
                 }
             }
             catch { /* Best effort */ }
+#endif
         }
     }
 }

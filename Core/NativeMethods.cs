@@ -12,7 +12,7 @@ namespace QuickWheel.Core
         [StructLayout(LayoutKind.Sequential)] public struct Win32Point { public int X; public int Y; }
 
         // --- INPUT STRUCTS ---
-        
+
         [StructLayout(LayoutKind.Sequential)]
         public struct INPUT
         {

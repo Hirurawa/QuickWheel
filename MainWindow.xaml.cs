@@ -41,8 +41,8 @@ namespace QuickWheel
                     _viewModel.PropertyChanged += ViewModel_PropertyChanged;
                     _viewModel.RequestClose += (sender, args) =>
                     {
-                         this.Hide();
-                         _trapTimer.Stop();
+                        this.Hide();
+                        _trapTimer.Stop();
                     };
                     _viewModel.RequestShow += (sender, args) =>
                     {
@@ -55,7 +55,7 @@ namespace QuickWheel
 
                     // Initial draw if any
                     if (_viewModel.CurrentSlices != null)
-                         DrawDynamicWheel(_viewModel.CurrentSlices);
+                        DrawDynamicWheel(_viewModel.CurrentSlices);
                 }
             };
         }
@@ -89,13 +89,13 @@ namespace QuickWheel
             DynamicLayer.Children.Clear();
             SelectionHighlight.Opacity = 0;
             _slicePanels.Clear();
-            
+
             if (items == null) return;
             int count = items.Count;
             if (count == 0) return;
 
             double sliceAngle = 360.0 / count;
-            
+
             for (int i = 0; i < count; i++)
             {
                 // 1. Divider Line
@@ -114,7 +114,7 @@ namespace QuickWheel
                 // 2. CALCULATE POSITION
                 double midAngle = (i * sliceAngle) + (sliceAngle / 2);
                 double midRad = midAngle * (Math.PI / 180.0);
-                
+
                 double distanceFromCenter = 90;
 
                 // Move content out to 115px from center
@@ -123,10 +123,10 @@ namespace QuickWheel
 
                 // 3. ICON or TEXT?
                 var slice = items[i];
-                
+
                 // Create a container (StackPanel) so we can stack Icon + Text if needed
-                StackPanel panel = new StackPanel 
-                { 
+                StackPanel panel = new StackPanel
+                {
                     Orientation = Orientation.Vertical,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
@@ -140,7 +140,7 @@ namespace QuickWheel
                         Source = new BitmapImage(new Uri(System.IO.Path.GetFullPath(slice.Icon))),
                         Width = 32, // Standard icon size
                         Height = 32,
-                        Margin = new Thickness(0,0,0,5) // Space between icon and text
+                        Margin = new Thickness(0, 0, 0, 5) // Space between icon and text
                     };
                     // Optimization: Decode pixel width to save RAM
                     // (WPF handles simple URIs fine for small apps)
@@ -172,7 +172,7 @@ namespace QuickWheel
                         p.RenderTransform = new TranslateTransform(-p.ActualWidth / 2, -p.ActualHeight / 2);
                     }
                 };
-                
+
                 _slicePanels.Add(panel);
                 DynamicLayer.Children.Add(panel);
             }
@@ -215,7 +215,7 @@ namespace QuickWheel
             {
                 double angle = Math.Atan2(dy, dx) * (180 / Math.PI);
                 if (angle < 0) angle += 360;
-                
+
                 index = (int)(angle / (360.0 / count));
                 if (index >= 0 && index < count)
                 {
@@ -228,7 +228,7 @@ namespace QuickWheel
             }
             else
             {
-                 _viewModel.SelectedSlice = null;
+                _viewModel.SelectedSlice = null;
             }
 
             UpdateHighlight(index, count);
@@ -246,7 +246,7 @@ namespace QuickWheel
             double radius = Constants.WheelRadius - 2;
             double center = Constants.WheelCenter;
             double sliceAngle = 360.0 / totalCount;
-            
+
             double startAngle = index * sliceAngle;
             double endAngle = (index + 1) * sliceAngle;
 
@@ -261,16 +261,16 @@ namespace QuickWheel
             figure.StartPoint = centerPt;
             figure.Segments.Add(new LineSegment(startPt, true));
             figure.Segments.Add(new ArcSegment(
-                endPt, 
-                new Size(radius, radius), 
-                0, 
+                endPt,
+                new Size(radius, radius),
+                0,
                 false,
-                SweepDirection.Clockwise, 
+                SweepDirection.Clockwise,
                 true));
-            
+
             PathGeometry geometry = new PathGeometry();
             geometry.Figures.Add(figure);
-            
+
             SelectionHighlight.Data = geometry;
             SelectionHighlight.Opacity = 1;
         }
@@ -280,7 +280,7 @@ namespace QuickWheel
             for (int i = 0; i < _slicePanels.Count; i++)
             {
                 var panel = _slicePanels[i];
-                
+
                 TextBlock textBlock = null;
                 foreach (var child in panel.Children)
                 {
@@ -303,23 +303,23 @@ namespace QuickWheel
                         ShadowDepth = 0,
                         Opacity = 1
                     };
-                    
+
                     panel.Opacity = 1.0;
-                    if (textBlock != null) 
+                    if (textBlock != null)
                         //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0, 209, 255));
                         textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 180, 0));
-                        //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 20, 147));
-                        //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(57, 255, 20));
+                    //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 20, 147));
+                    //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(57, 255, 20));
                 }
                 else
                 {
                     // INACTIVE: Remove Glow
                     panel.Effect = null;
-                    
+
                     // Optional: Dim the inactive ones slightly for contrast
                     panel.Opacity = 0.6;
-                    
-                    if (textBlock != null) 
+
+                    if (textBlock != null)
                         //textBlock.Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 180)); // Light Gray
                         textBlock.Foreground = Brushes.White;
                 }
@@ -334,7 +334,7 @@ namespace QuickWheel
             this.Left = (mousePos.X / dpi.X) - Constants.WheelCenter;
             this.Top = (mousePos.Y / dpi.Y) - Constants.WheelCenter;
         }
-        
+
         private void CenterMouse()
         {
             var dpi = GetDpiScale();
@@ -346,8 +346,8 @@ namespace QuickWheel
         private Point GetDpiScale()
         {
             var source = PresentationSource.FromVisual(this);
-            return (source?.CompositionTarget != null) 
-                ? new Point(source.CompositionTarget.TransformToDevice.M11, source.CompositionTarget.TransformToDevice.M22) 
+            return (source?.CompositionTarget != null)
+                ? new Point(source.CompositionTarget.TransformToDevice.M11, source.CompositionTarget.TransformToDevice.M22)
                 : new Point(1.0, 1.0);
         }
 
