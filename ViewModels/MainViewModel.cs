@@ -83,7 +83,8 @@ namespace QuickWheel.ViewModels
             {
                 Shutdown();
             }
-            if (e.Key == Key.XButton2)
+            // 169 is the integer value for Key.XButton2
+            if (e.Key == (Key)169)
             {
                 e.Handled = true;
                 if (!IsVisible)
@@ -97,7 +98,8 @@ namespace QuickWheel.ViewModels
 
         private void OnKeyUp(object sender, GlobalInputEventArgs e)
         {
-            if (e.Key == Key.XButton2)
+            // 169 is the integer value for Key.XButton2
+            if (e.Key == (Key)169)
             {
                 e.Handled = true;
                 _hoverTimer.Stop();

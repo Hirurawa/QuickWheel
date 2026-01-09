@@ -41,7 +41,8 @@ namespace QuickWheel.Core
 
                     if (xButton == NativeMethods.XBUTTON2)
                     {
-                        var args = new GlobalKeyEventArgs(Key.XButton2);
+                        // 169 is the integer value for Key.XButton2
+                        var args = new GlobalKeyEventArgs((Key)169);
 
                         if (wParam == (IntPtr)NativeMethods.WM_XBUTTONDOWN)
                             OnButtonDown?.Invoke(this, args);
