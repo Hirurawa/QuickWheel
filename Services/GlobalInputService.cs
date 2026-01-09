@@ -7,6 +7,7 @@ namespace QuickWheel.Services
     public class GlobalInputService : IInputService
     {
         private readonly GlobalKeyboardHook _hook;
+        private readonly GlobalMouseHook _mouseHook;
         private bool _isEnabled;
 
         public event EventHandler<GlobalInputEventArgs> OnKeyDown;
@@ -15,6 +16,9 @@ namespace QuickWheel.Services
         public GlobalInputService()
         {
             _hook = new GlobalKeyboardHook();
+            _mouseHook = new GlobalMouseHook();
+
+            // Keyboard Events
             _hook.OnKeyDown += (s, e) =>
             {
                 var args = new GlobalInputEventArgs(e.Key);
@@ -27,6 +31,20 @@ namespace QuickWheel.Services
                 OnKeyUp?.Invoke(this, args);
                 e.Handled = args.Handled;
             };
+
+            // Mouse Events (Mapped to Key Events)
+            _mouseHook.OnButtonDown += (s, e) =>
+            {
+                var args = new GlobalInputEventArgs(e.Key);
+                OnKeyDown?.Invoke(this, args);
+                e.Handled = args.Handled;
+            };
+            _mouseHook.OnButtonUp += (s, e) =>
+            {
+                var args = new GlobalInputEventArgs(e.Key);
+                OnKeyUp?.Invoke(this, args);
+                e.Handled = args.Handled;
+            };
         }
 
         public void Enable()
@@ -34,6 +52,7 @@ namespace QuickWheel.Services
             if (!_isEnabled)
             {
                 _hook.Hook();
+                _mouseHook.Hook();
                 _isEnabled = true;
             }
         }
@@ -43,6 +62,7 @@ namespace QuickWheel.Services
             if (_isEnabled)
             {
                 _hook.Unhook();
+                _mouseHook.Unhook();
                 _isEnabled = false;
             }
         }
