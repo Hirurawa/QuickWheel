@@ -83,7 +83,7 @@ namespace QuickWheel.ViewModels
             {
                 Shutdown();
             }
-            if (e.Key == Key.Tab)
+            if (e.Key == Key.XButton2)
             {
                 e.Handled = true;
                 if (!IsVisible)
@@ -97,7 +97,7 @@ namespace QuickWheel.ViewModels
 
         private void OnKeyUp(object sender, GlobalInputEventArgs e)
         {
-            if (e.Key == Key.Tab)
+            if (e.Key == Key.XButton2)
             {
                 e.Handled = true;
                 _hoverTimer.Stop();
