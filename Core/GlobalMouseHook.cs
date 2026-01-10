@@ -35,6 +35,11 @@ namespace QuickWheel.Core
                 {
                     var hookStruct = Marshal.PtrToStructure<NativeMethods.MSLLHOOKSTRUCT>(lParam);
 
+                    if (hookStruct.dwExtraInfo == Infrastructure.Constants.InputInjectionSignature)
+                    {
+                        return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
+                    }
+
                     // High word of mouseData specifies which XButton was pressed.
                     // XBUTTON1 = 0x0001, XBUTTON2 = 0x0002
                     int xButton = (int)(hookStruct.mouseData >> 16);

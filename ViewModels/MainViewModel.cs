@@ -15,10 +15,12 @@ namespace QuickWheel.ViewModels
         private readonly IInputService _inputService;
         private readonly ISettingsService _settingsService;
         private readonly ActionFactory _actionFactory;
+        private readonly IInputSender _inputSender;
 
         private List<SliceConfig> _currentSlices;
         private Stack<List<SliceConfig>> _navigationStack;
         private DispatcherTimer _hoverTimer;
+        private DispatcherTimer _activationTimer;
         private SliceConfig _lastHoveredSlice;
         private bool _isVisible;
         private string _centerText;
@@ -30,12 +32,14 @@ namespace QuickWheel.ViewModels
             ILogger logger,
             IInputService inputService,
             ISettingsService settingsService,
-            ActionFactory actionFactory)
+            ActionFactory actionFactory,
+            IInputSender inputSender)
         {
             _logger = logger;
             _inputService = inputService;
             _settingsService = settingsService;
             _actionFactory = actionFactory;
+            _inputSender = inputSender;
 
             _navigationStack = new Stack<List<SliceConfig>>();
             _inputService.OnKeyDown += OnKeyDown;
@@ -43,6 +47,9 @@ namespace QuickWheel.ViewModels
 
             _hoverTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Constants.HoverIntervalMs) };
             _hoverTimer.Tick += HoverTimer_Tick;
+
+            _activationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Constants.ActivationDelayMs) };
+            _activationTimer.Tick += ActivationTimer_Tick;
 
             LoadSettings();
         }
@@ -83,28 +90,45 @@ namespace QuickWheel.ViewModels
             {
                 Shutdown();
             }
-            // 169 is the integer value for Key.XButton2
-            if (e.Key == (Key)169)
+
+            if (e.Key == Constants.ActivationButton)
             {
                 e.Handled = true;
-                if (!IsVisible)
+                if (!IsVisible && !_activationTimer.IsEnabled)
                 {
-                    ResetState();
-                    IsVisible = true;
-                    RequestShow?.Invoke(this, EventArgs.Empty);
+                    _activationTimer.Start();
                 }
             }
         }
 
         private void OnKeyUp(object sender, GlobalInputEventArgs e)
         {
-            // 169 is the integer value for Key.XButton2
-            if (e.Key == (Key)169)
+            if (e.Key == Constants.ActivationButton)
             {
                 e.Handled = true;
-                _hoverTimer.Stop();
-                ExecuteCurrentSelection();
+
+                if (_activationTimer.IsEnabled)
+                {
+                    // Timer still running -> It was a short CLICK.
+                    _activationTimer.Stop();
+                    _inputSender.SendForwardClick();
+                }
+                else if (IsVisible)
+                {
+                    // Wheel is open -> It was a HOLD.
+                    _hoverTimer.Stop();
+                    ExecuteCurrentSelection();
+                }
             }
+        }
+
+        private void ActivationTimer_Tick(object sender, EventArgs e)
+        {
+            _activationTimer.Stop();
+            // Timer finished -> User is HOLDING the button. Open the wheel.
+            ResetState();
+            IsVisible = true;
+            RequestShow?.Invoke(this, EventArgs.Empty);
         }
 
         private SliceConfig _selectedSlice;

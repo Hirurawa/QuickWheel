@@ -10,5 +10,10 @@ namespace QuickWheel.Infrastructure
         public const int TrapIntervalMs = 10;
         public const int HoverIntervalMs = 350;
         public const string SettingsFileName = "settings.json";
+
+        // Activation / Input Injection
+        public const int ActivationDelayMs = 200;
+        public static readonly System.Windows.Input.Key ActivationButton = (System.Windows.Input.Key)169; // Key.XButton2
+        public static readonly System.IntPtr InputInjectionSignature = (System.IntPtr)0xFF55;
     }
 }
