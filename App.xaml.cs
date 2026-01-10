@@ -24,7 +24,7 @@ namespace QuickWheel
             _inputService = new GlobalInputService();
             _settingsService = new JsonSettingsService(_logger);
             var actionFactory = new ActionFactory();
-            var inputSender = new InputSender();
+            var inputSender = new QuickWheel.Core.InputSender();
 
             _mainViewModel = new MainViewModel(_logger, _inputService, _settingsService, actionFactory, inputSender);
             _mainViewModel.Initialize();

@@ -1,10 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
-using QuickWheel.Core; // Ensure this points to where NativeMethods is
+using QuickWheel.Core;
+using QuickWheel.Infrastructure;
+using QuickWheel.Interfaces;
 
 namespace QuickWheel.Core
 {
-    public static class InputSender
+    public class InputSender : IInputSender
     {
         public static void SendCtrlV()
         {
@@ -40,6 +42,43 @@ namespace QuickWheel.Core
                     }
                 }
             };
+        }
+
+        public void SendForwardClick()
+        {
+            var inputs = new NativeMethods.INPUT[2];
+
+            // XBUTTON2 Down
+            inputs[0] = new NativeMethods.INPUT
+            {
+                type = NativeMethods.INPUT_MOUSE,
+                U = new NativeMethods.InputUnion
+                {
+                    mi = new NativeMethods.MOUSEINPUT
+                    {
+                        dwFlags = NativeMethods.MOUSEEVENTF_XDOWN,
+                        mouseData = NativeMethods.XBUTTON2_UINT,
+                        dwExtraInfo = Constants.InputInjectionSignature
+                    }
+                }
+            };
+
+            // XBUTTON2 Up
+            inputs[1] = new NativeMethods.INPUT
+            {
+                type = NativeMethods.INPUT_MOUSE,
+                U = new NativeMethods.InputUnion
+                {
+                    mi = new NativeMethods.MOUSEINPUT
+                    {
+                        dwFlags = NativeMethods.MOUSEEVENTF_XUP,
+                        mouseData = NativeMethods.XBUTTON2_UINT,
+                        dwExtraInfo = Constants.InputInjectionSignature
+                    }
+                }
+            };
+
+            NativeMethods.SendInput((uint)inputs.Length, inputs, NativeMethods.INPUT.Size);
         }
     }
 }

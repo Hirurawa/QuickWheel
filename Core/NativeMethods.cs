@@ -86,5 +86,6 @@ namespace QuickWheel.Core
         public const uint MOUSEEVENTF_XUP = 0x0100;
         public const uint MOUSEEVENTF_ABSOLUTE = 0x8000;
         public const uint XBUTTON1 = 0x0001;
+        public const uint XBUTTON2_UINT = 0x0002;
     }
 }
