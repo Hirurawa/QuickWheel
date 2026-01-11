@@ -80,5 +80,12 @@ namespace QuickWheel.Core
 
         public const int INPUT_KEYBOARD = 1;
         public const uint KEYEVENTF_KEYUP = 0x0002;
+
+        public const int INPUT_MOUSE = 0;
+        public const uint MOUSEEVENTF_XDOWN = 0x0080;
+        public const uint MOUSEEVENTF_XUP = 0x0100;
+        public const uint MOUSEEVENTF_ABSOLUTE = 0x8000;
+        public const uint XBUTTON1 = 0x0001;
+        public const uint XBUTTON2_UINT = 0x0002;
     }
 }
