@@ -37,5 +37,20 @@ namespace QuickWheel.Services
             _logger.Log("Using default settings.");
             return new AppSettings();
         }
+
+        public void SaveSettings(AppSettings settings)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                string json = JsonSerializer.Serialize(settings, options);
+                File.WriteAllText(Constants.SettingsFileName, json);
+                _logger.Log("Settings saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to save settings", ex);
+            }
+        }
     }
 }

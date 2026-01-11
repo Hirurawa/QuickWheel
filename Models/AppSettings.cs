@@ -14,6 +14,7 @@ namespace QuickWheel.Models
 
     public class AppSettings
     {
+        public int ActivationKey { get; set; } = 205; // Default: MouseX2
         public List<SliceConfig> Slices { get; set; } = new List<SliceConfig>();
     }
 
