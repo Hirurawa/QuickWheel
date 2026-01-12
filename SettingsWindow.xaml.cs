@@ -25,12 +25,49 @@ namespace QuickWheel
             _settings = _settingsService.LoadSettings();
             UpdateKeyDisplay((Key)_settings.ActivationKey);
 
+            // Initialize Sliders
+            ActivationDelaySlider.Value = _settings.ActivationDelay > 0 ? _settings.ActivationDelay : Constants.ActivationDelayMs;
+            HoverIntervalSlider.Value = _settings.HoverInterval > 0 ? _settings.HoverInterval : Constants.HoverIntervalMs;
+
             this.Closed += SettingsWindow_Closed;
         }
 
         private void UpdateKeyDisplay(Key key)
         {
             CurrentKeyText.Text = GetKeyName(key);
+        }
+
+        private void ActivationDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (ActivationDelayText != null)
+            {
+                int val = (int)e.NewValue;
+                ActivationDelayText.Text = $"{val} ms";
+                if (_settings != null)
+                {
+                    _settings.ActivationDelay = val;
+                }
+            }
+        }
+
+        private void HoverIntervalSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (HoverIntervalText != null)
+            {
+                int val = (int)e.NewValue;
+                HoverIntervalText.Text = $"{val} ms";
+                if (_settings != null)
+                {
+                    _settings.HoverInterval = val;
+                }
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            _settingsService.SaveSettings(_settings);
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
+            this.Close();
         }
 
         private string GetKeyName(Key key)
@@ -67,7 +104,10 @@ namespace QuickWheel
                 Dispatcher.Invoke(() =>
                 {
                     _settings.ActivationKey = (int)newKey;
-                    _settingsService.SaveSettings(_settings);
+
+                    // Don't save immediately!
+                    // _settingsService.SaveSettings(_settings);
+
                     UpdateKeyDisplay(newKey);
 
                     // Reset UI
@@ -78,8 +118,8 @@ namespace QuickWheel
                     // Unsubscribe
                     _inputService.OnKeyDown -= OnGlobalKeyDown;
 
-                    // Notify Main App
-                    SettingsChanged?.Invoke(this, EventArgs.Empty);
+                    // Don't notify main app yet
+                    // SettingsChanged?.Invoke(this, EventArgs.Empty);
                 });
             }
         }

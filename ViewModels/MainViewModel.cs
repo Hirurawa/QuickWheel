@@ -94,6 +94,10 @@ namespace QuickWheel.ViewModels
 
             // Fallback if 0
             if (_activationKey == 0) _activationKey = 205; // MouseX2 default
+
+            // Update timers
+            _activationTimer.Interval = TimeSpan.FromMilliseconds(settings.ActivationDelay > 0 ? settings.ActivationDelay : Constants.ActivationDelayMs);
+            _hoverTimer.Interval = TimeSpan.FromMilliseconds(settings.HoverInterval > 0 ? settings.HoverInterval : Constants.HoverIntervalMs);
         }
 
         private void OnKeyDown(object sender, GlobalInputEventArgs e)

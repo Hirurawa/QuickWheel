@@ -15,6 +15,8 @@ namespace QuickWheel.Models
     public class AppSettings
     {
         public int ActivationKey { get; set; } = 205; // Default: MouseX2
+        public int ActivationDelay { get; set; } = 200;
+        public int HoverInterval { get; set; } = 350;
         public List<SliceConfig> Slices { get; set; } = new List<SliceConfig>();
     }
 
