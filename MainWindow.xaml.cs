@@ -47,9 +47,22 @@ namespace QuickWheel
                     _viewModel.RequestShow += (sender, args) =>
                     {
                         PositionWindowAtMouse();
+
+                        // Prevent Ghosting: Ensure new state is rendered before showing
+                        this.Opacity = 0;
                         this.Show();
                         this.Activate();
+
+                        // Force visual update
                         DrawDynamicWheel(_viewModel.CurrentSlices);
+                        this.UpdateLayout();
+
+                        // Fade in (instant, but after render pass)
+                        Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+                        {
+                            this.Opacity = 1;
+                        }));
+
                         _trapTimer.Start();
                     };
 
