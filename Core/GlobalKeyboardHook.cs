@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+using QuickWheel.Infrastructure;
 
 namespace QuickWheel.Core
 {
@@ -37,7 +38,16 @@ namespace QuickWheel.Core
         {
             if (nCode >= 0)
             {
-                int vkCode = Marshal.ReadInt32(lParam);
+                // Marshal to KBDLLHOOKSTRUCT to check dwExtraInfo
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+
+                if (hookStruct.dwExtraInfo == Constants.InputInjectionSignature)
+                {
+                    // Ignore injected inputs to prevent infinite loops (flashing)
+                    return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
+                }
+
+                int vkCode = (int)hookStruct.vkCode;
                 Key key = KeyInterop.KeyFromVirtualKey(vkCode);
                 var args = new GlobalKeyEventArgs(key);
 
