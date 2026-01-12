@@ -17,18 +17,18 @@ namespace QuickWheel.ViewModels
         private readonly ActionFactory _actionFactory;
         private readonly IInputSender _inputSender;
 
-        private List<SliceConfig> _currentSlices;
+        private List<SliceConfig> _currentSlices = null!;
         private Stack<List<SliceConfig>> _navigationStack;
         private DispatcherTimer _hoverTimer;
         private DispatcherTimer _activationTimer;
-        private SliceConfig _lastHoveredSlice;
+        private SliceConfig? _lastHoveredSlice;
         private bool _isVisible;
-        private string _centerText;
+        private string _centerText = string.Empty;
         private int _activationKey;
         private int _fadeInDuration;
 
-        public event EventHandler RequestClose;
-        public event EventHandler RequestShow;
+        public event EventHandler? RequestClose;
+        public event EventHandler? RequestShow;
 
         public MainViewModel(
             ILogger logger,
@@ -108,7 +108,7 @@ namespace QuickWheel.ViewModels
             _hoverTimer.Interval = TimeSpan.FromMilliseconds(settings.HoverInterval > 0 ? settings.HoverInterval : Constants.HoverIntervalMs);
         }
 
-        private void OnKeyDown(object sender, GlobalInputEventArgs e)
+        private void OnKeyDown(object? sender, GlobalInputEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -128,7 +128,7 @@ namespace QuickWheel.ViewModels
             }
         }
 
-        private void OnKeyUp(object sender, GlobalInputEventArgs e)
+        private void OnKeyUp(object? sender, GlobalInputEventArgs e)
         {
             if ((int)e.Key == _activationKey)
             {
@@ -153,13 +153,13 @@ namespace QuickWheel.ViewModels
             }
         }
 
-        private void ActivationTimer_Tick(object sender, EventArgs e)
+        private void ActivationTimer_Tick(object? sender, EventArgs e)
         {
             _activationTimer.Stop();
         }
 
-        private SliceConfig _selectedSlice;
-        public SliceConfig SelectedSlice
+        private SliceConfig? _selectedSlice;
+        public SliceConfig? SelectedSlice
         {
             get => _selectedSlice;
             set
@@ -193,7 +193,7 @@ namespace QuickWheel.ViewModels
             }
         }
 
-        private void HoverTimer_Tick(object sender, EventArgs e)
+        private void HoverTimer_Tick(object? sender, EventArgs e)
         {
             if (_lastHoveredSlice != null && _lastHoveredSlice.Items?.Count > 0)
             {
