@@ -62,7 +62,7 @@ namespace QuickWheel
                         {
                             From = 0.0,
                             To = 1.0,
-                            Duration = TimeSpan.FromMilliseconds(100)
+                            Duration = TimeSpan.FromMilliseconds(_viewModel.FadeInDuration)
                         };
                         this.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 

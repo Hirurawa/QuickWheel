@@ -25,6 +25,7 @@ namespace QuickWheel.ViewModels
         private bool _isVisible;
         private string _centerText;
         private int _activationKey;
+        private int _fadeInDuration;
 
         public event EventHandler RequestClose;
         public event EventHandler RequestShow;
@@ -73,6 +74,12 @@ namespace QuickWheel.ViewModels
             set => SetProperty(ref _centerText, value);
         }
 
+        public int FadeInDuration
+        {
+            get => _fadeInDuration;
+            set => SetProperty(ref _fadeInDuration, value);
+        }
+
         public void Initialize()
         {
             _inputService.Enable();
@@ -91,6 +98,7 @@ namespace QuickWheel.ViewModels
             var settings = _settingsService.LoadSettings();
             _currentSlices = settings.Slices;
             _activationKey = settings.ActivationKey;
+            FadeInDuration = settings.FadeInDuration >= 0 ? settings.FadeInDuration : Constants.FadeInDurationMs;
 
             // Fallback if 0
             if (_activationKey == 0) _activationKey = 205; // MouseX2 default

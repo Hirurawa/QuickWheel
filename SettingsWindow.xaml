@@ -36,6 +36,15 @@
             </StackPanel>
             <Slider x:Name="HoverIntervalSlider" Minimum="50" Maximum="2000" Width="250" Margin="0,0,0,20" ValueChanged="HoverIntervalSlider_ValueChanged"/>
 
+            <!-- Fade In Duration -->
+            <TextBlock Text="Fade In Duration" Foreground="#AAAAAA" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                <TextBox x:Name="FadeInDurationInput" Width="50" TextAlignment="Right" Background="#333333" Foreground="#00D1FF" BorderBrush="#555555" FontWeight="Bold" FontSize="14"
+                         LostFocus="FadeInDurationInput_LostFocus" KeyDown="FadeInDurationInput_KeyDown"/>
+                <TextBlock Text=" ms" FontWeight="Bold" FontSize="14" Foreground="#00D1FF" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Slider x:Name="FadeInDurationSlider" Minimum="0" Maximum="500" Width="250" Margin="0,0,0,20" ValueChanged="FadeInDurationSlider_ValueChanged"/>
+
             <Button x:Name="SaveButton" Content="Save" Click="SaveButton_Click"
                     Padding="20,10" Background="#28a745" Foreground="White" BorderBrush="#218838"/>
         </StackPanel>
