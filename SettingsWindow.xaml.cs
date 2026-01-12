@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Input;
+using QuickWheel.Core;
 using QuickWheel.Infrastructure;
 using QuickWheel.Interfaces;
 using QuickWheel.Models;
@@ -39,10 +40,10 @@ namespace QuickWheel
 
         private void ActivationDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (ActivationDelayText != null)
+            if (ActivationDelayInput != null)
             {
                 int val = (int)e.NewValue;
-                ActivationDelayText.Text = $"{val} ms";
+                ActivationDelayInput.Text = $"{val}";
                 if (_settings != null)
                 {
                     _settings.ActivationDelay = val;
@@ -52,14 +53,67 @@ namespace QuickWheel
 
         private void HoverIntervalSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (HoverIntervalText != null)
+            if (HoverIntervalInput != null)
             {
                 int val = (int)e.NewValue;
-                HoverIntervalText.Text = $"{val} ms";
+                HoverIntervalInput.Text = $"{val}";
                 if (_settings != null)
                 {
                     _settings.HoverInterval = val;
                 }
+            }
+        }
+
+        private void ActivationDelayInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            ValidateActivationDelay();
+        }
+
+        private void ActivationDelayInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ValidateActivationDelay();
+                // Remove focus to trigger update visuals if needed, or just let user continue
+                Keyboard.ClearFocus();
+            }
+        }
+
+        private void ValidateActivationDelay()
+        {
+            if (SettingsValidator.ValidateRange(ActivationDelayInput.Text, ActivationDelaySlider.Minimum, ActivationDelaySlider.Maximum, out int result))
+            {
+                ActivationDelaySlider.Value = result;
+            }
+            else
+            {
+                ActivationDelayInput.Text = ((int)ActivationDelaySlider.Value).ToString();
+            }
+        }
+
+        private void HoverIntervalInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            ValidateHoverInterval();
+        }
+
+        private void HoverIntervalInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ValidateHoverInterval();
+                Keyboard.ClearFocus();
+            }
+        }
+
+        private void ValidateHoverInterval()
+        {
+            if (SettingsValidator.ValidateRange(HoverIntervalInput.Text, HoverIntervalSlider.Minimum, HoverIntervalSlider.Maximum, out int result))
+            {
+                HoverIntervalSlider.Value = result;
+            }
+            else
+            {
+                HoverIntervalInput.Text = ((int)HoverIntervalSlider.Value).ToString();
             }
         }
 
