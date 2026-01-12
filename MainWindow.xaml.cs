@@ -11,6 +11,7 @@ using QuickWheel.Models;
 using QuickWheel.ViewModels;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Effects;
+using System.Windows.Media.Animation;
 using System.IO;
 
 namespace QuickWheel
@@ -49,19 +50,22 @@ namespace QuickWheel
                         PositionWindowAtMouse();
 
                         // Prevent Ghosting: Ensure new state is rendered before showing
+                        this.BeginAnimation(UIElement.OpacityProperty, null); // Clear any previous animation locks
                         this.Opacity = 0;
                         this.Show();
-                        this.Activate();
 
                         // Force visual update
                         DrawDynamicWheel(_viewModel.CurrentSlices);
                         this.UpdateLayout();
 
-                        // Fade in (instant, but after render pass)
-                        Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+                        // Fade in (animated)
+                        DoubleAnimation fadeIn = new DoubleAnimation
                         {
-                            this.Opacity = 1;
-                        }));
+                            From = 0.0,
+                            To = 1.0,
+                            Duration = TimeSpan.FromMilliseconds(_viewModel.FadeInDuration)
+                        };
+                        this.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
                         _trapTimer.Start();
                     };

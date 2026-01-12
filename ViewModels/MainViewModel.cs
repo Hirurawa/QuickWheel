@@ -25,6 +25,7 @@ namespace QuickWheel.ViewModels
         private bool _isVisible;
         private string _centerText;
         private int _activationKey;
+        private int _fadeInDuration;
 
         public event EventHandler RequestClose;
         public event EventHandler RequestShow;
@@ -73,6 +74,12 @@ namespace QuickWheel.ViewModels
             set => SetProperty(ref _centerText, value);
         }
 
+        public int FadeInDuration
+        {
+            get => _fadeInDuration;
+            set => SetProperty(ref _fadeInDuration, value);
+        }
+
         public void Initialize()
         {
             _inputService.Enable();
@@ -91,6 +98,7 @@ namespace QuickWheel.ViewModels
             var settings = _settingsService.LoadSettings();
             _currentSlices = settings.Slices;
             _activationKey = settings.ActivationKey;
+            FadeInDuration = settings.FadeInDuration >= 0 ? settings.FadeInDuration : Constants.FadeInDurationMs;
 
             // Fallback if 0
             if (_activationKey == 0) _activationKey = 205; // MouseX2 default
@@ -112,6 +120,9 @@ namespace QuickWheel.ViewModels
                 e.Handled = true;
                 if (!IsVisible && !_activationTimer.IsEnabled)
                 {
+                    ResetState();
+                    IsVisible = true;
+                    RequestShow?.Invoke(this, EventArgs.Empty);
                     _activationTimer.Start();
                 }
             }
@@ -125,16 +136,19 @@ namespace QuickWheel.ViewModels
 
                 if (_activationTimer.IsEnabled)
                 {
-                    // Timer still running -> It was a short CLICK.
+                    // Timer still running -> It was a short CLICK (Passthrough).
                     _activationTimer.Stop();
-                    // Send the original key click
+                    HideWindow();
                     _inputSender.Send((Key)_activationKey);
                 }
-                else if (IsVisible)
+                else
                 {
-                    // Wheel is open -> It was a HOLD.
-                    _hoverTimer.Stop();
-                    ExecuteCurrentSelection();
+                    // Timer finished -> It was a HOLD (Action).
+                    if (IsVisible)
+                    {
+                        _hoverTimer.Stop();
+                        ExecuteCurrentSelection();
+                    }
                 }
             }
         }
@@ -142,10 +156,6 @@ namespace QuickWheel.ViewModels
         private void ActivationTimer_Tick(object sender, EventArgs e)
         {
             _activationTimer.Stop();
-            // Timer finished -> User is HOLDING the button. Open the wheel.
-            ResetState();
-            IsVisible = true;
-            RequestShow?.Invoke(this, EventArgs.Empty);
         }
 
         private SliceConfig _selectedSlice;

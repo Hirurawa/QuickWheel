@@ -29,6 +29,7 @@ namespace QuickWheel
             // Initialize Sliders
             ActivationDelaySlider.Value = _settings.ActivationDelay > 0 ? _settings.ActivationDelay : Constants.ActivationDelayMs;
             HoverIntervalSlider.Value = _settings.HoverInterval > 0 ? _settings.HoverInterval : Constants.HoverIntervalMs;
+            FadeInDurationSlider.Value = _settings.FadeInDuration >= 0 ? _settings.FadeInDuration : Constants.FadeInDurationMs;
 
             this.Closed += SettingsWindow_Closed;
         }
@@ -60,6 +61,19 @@ namespace QuickWheel
                 if (_settings != null)
                 {
                     _settings.HoverInterval = val;
+                }
+            }
+        }
+
+        private void FadeInDurationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (FadeInDurationInput != null)
+            {
+                int val = (int)e.NewValue;
+                FadeInDurationInput.Text = $"{val}";
+                if (_settings != null)
+                {
+                    _settings.FadeInDuration = val;
                 }
             }
         }
@@ -114,6 +128,32 @@ namespace QuickWheel
             else
             {
                 HoverIntervalInput.Text = ((int)HoverIntervalSlider.Value).ToString();
+            }
+        }
+
+        private void FadeInDurationInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            ValidateFadeInDuration();
+        }
+
+        private void FadeInDurationInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ValidateFadeInDuration();
+                Keyboard.ClearFocus();
+            }
+        }
+
+        private void ValidateFadeInDuration()
+        {
+            if (SettingsValidator.ValidateRange(FadeInDurationInput.Text, FadeInDurationSlider.Minimum, FadeInDurationSlider.Maximum, out int result))
+            {
+                FadeInDurationSlider.Value = result;
+            }
+            else
+            {
+                FadeInDurationInput.Text = ((int)FadeInDurationSlider.Value).ToString();
             }
         }
 

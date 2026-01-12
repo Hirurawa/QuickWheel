@@ -13,6 +13,7 @@ namespace QuickWheel.Infrastructure
 
         // Activation / Input Injection
         public const int ActivationDelayMs = 200;
+        public const int FadeInDurationMs = 100;
 
         // Mouse "Keys" (Virtual)
         // Values > 200 to avoid conflict with standard Key enum (Max ~172)
