@@ -50,6 +50,7 @@ namespace QuickWheel
                         PositionWindowAtMouse();
 
                         // Prevent Ghosting: Ensure new state is rendered before showing
+                        this.BeginAnimation(UIElement.OpacityProperty, null); // Clear any previous animation locks
                         this.Opacity = 0;
                         this.Show();
 
