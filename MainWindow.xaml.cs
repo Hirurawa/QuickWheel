@@ -59,7 +59,12 @@ namespace QuickWheel
                         this.UpdateLayout();
 
                         // Fade in (animated)
-                        DoubleAnimation fadeIn = new DoubleAnimation(1.0, TimeSpan.FromMilliseconds(100));
+                        DoubleAnimation fadeIn = new DoubleAnimation
+                        {
+                            From = 0.0,
+                            To = 1.0,
+                            Duration = TimeSpan.FromMilliseconds(100)
+                        };
                         this.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
                         _trapTimer.Start();
