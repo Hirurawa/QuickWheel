@@ -52,7 +52,6 @@ namespace QuickWheel
                         // Prevent Ghosting: Ensure new state is rendered before showing
                         this.Opacity = 0;
                         this.Show();
-                        this.Activate();
 
                         // Force visual update
                         DrawDynamicWheel(_viewModel.CurrentSlices);

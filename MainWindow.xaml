@@ -9,7 +9,8 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        ShowActivated="False">
 
     <Grid>
         <Ellipse Width="300"
