@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+using QuickWheel.Infrastructure;
 
 namespace QuickWheel.Core
 {
@@ -31,31 +32,45 @@ namespace QuickWheel.Core
         {
             if (nCode >= 0)
             {
-                if (wParam == (IntPtr)NativeMethods.WM_XBUTTONDOWN || wParam == (IntPtr)NativeMethods.WM_XBUTTONUP)
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.MSLLHOOKSTRUCT>(lParam);
+
+                if (hookStruct.dwExtraInfo == Infrastructure.Constants.InputInjectionSignature)
                 {
-                    var hookStruct = Marshal.PtrToStructure<NativeMethods.MSLLHOOKSTRUCT>(lParam);
+                    return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
+                }
 
-                    if (hookStruct.dwExtraInfo == Infrastructure.Constants.InputInjectionSignature)
-                    {
-                        return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
-                    }
+                Key key = Key.None;
+                bool isDown = false;
+                bool isUp = false;
 
-                    // High word of mouseData specifies which XButton was pressed.
+                // Map Messages to Keys
+                if (wParam == (IntPtr)NativeMethods.WM_LBUTTONDOWN) { key = Constants.KeyMouseLeft; isDown = true; }
+                else if (wParam == (IntPtr)NativeMethods.WM_LBUTTONUP) { key = Constants.KeyMouseLeft; isUp = true; }
+                else if (wParam == (IntPtr)NativeMethods.WM_RBUTTONDOWN) { key = Constants.KeyMouseRight; isDown = true; }
+                else if (wParam == (IntPtr)NativeMethods.WM_RBUTTONUP) { key = Constants.KeyMouseRight; isUp = true; }
+                else if (wParam == (IntPtr)NativeMethods.WM_MBUTTONDOWN) { key = Constants.KeyMouseMiddle; isDown = true; }
+                else if (wParam == (IntPtr)NativeMethods.WM_MBUTTONUP) { key = Constants.KeyMouseMiddle; isUp = true; }
+                else if (wParam == (IntPtr)NativeMethods.WM_XBUTTONDOWN || wParam == (IntPtr)NativeMethods.WM_XBUTTONUP)
+                {
                     // XBUTTON1 = 0x0001, XBUTTON2 = 0x0002
                     int xButton = (int)(hookStruct.mouseData >> 16);
+                    if (xButton == 1) key = Constants.KeyMouseX1;
+                    else if (xButton == 2) key = Constants.KeyMouseX2;
 
-                    if (xButton == NativeMethods.XBUTTON2)
-                    {
-                        // 169 is the integer value for Key.XButton2
-                        var args = new GlobalKeyEventArgs((Key)169);
+                    if (wParam == (IntPtr)NativeMethods.WM_XBUTTONDOWN) isDown = true;
+                    else isUp = true;
+                }
 
-                        if (wParam == (IntPtr)NativeMethods.WM_XBUTTONDOWN)
-                            OnButtonDown?.Invoke(this, args);
-                        else if (wParam == (IntPtr)NativeMethods.WM_XBUTTONUP)
-                            OnButtonUp?.Invoke(this, args);
+                if (key != Key.None)
+                {
+                    var args = new GlobalKeyEventArgs(key);
 
-                        if (args.Handled) return (IntPtr)1;
-                    }
+                    if (isDown)
+                        OnButtonDown?.Invoke(this, args);
+                    else if (isUp)
+                        OnButtonUp?.Invoke(this, args);
+
+                    if (args.Handled) return (IntPtr)1;
                 }
             }
             return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);

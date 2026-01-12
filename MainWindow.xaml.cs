@@ -355,5 +355,13 @@ namespace QuickWheel
         {
             System.Windows.Application.Current.Shutdown();
         }
+
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel != null)
+            {
+                _viewModel.OpenSettings();
+            }
+        }
     }
 }

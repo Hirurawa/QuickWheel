@@ -24,6 +24,7 @@ namespace QuickWheel.ViewModels
         private SliceConfig _lastHoveredSlice;
         private bool _isVisible;
         private string _centerText;
+        private int _activationKey;
 
         public event EventHandler RequestClose;
         public event EventHandler RequestShow;
@@ -78,10 +79,21 @@ namespace QuickWheel.ViewModels
             _logger.Log("MainViewModel Initialized and Input Service Enabled.");
         }
 
+        public void OpenSettings()
+        {
+            var win = new SettingsWindow(_inputService, _settingsService);
+            win.SettingsChanged += (s, e) => LoadSettings(); // Reload settings when changed
+            win.ShowDialog();
+        }
+
         private void LoadSettings()
         {
             var settings = _settingsService.LoadSettings();
             _currentSlices = settings.Slices;
+            _activationKey = settings.ActivationKey;
+
+            // Fallback if 0
+            if (_activationKey == 0) _activationKey = 205; // MouseX2 default
         }
 
         private void OnKeyDown(object sender, GlobalInputEventArgs e)
@@ -91,7 +103,7 @@ namespace QuickWheel.ViewModels
                 Shutdown();
             }
 
-            if (e.Key == Constants.ActivationButton)
+            if ((int)e.Key == _activationKey)
             {
                 e.Handled = true;
                 if (!IsVisible && !_activationTimer.IsEnabled)
@@ -103,7 +115,7 @@ namespace QuickWheel.ViewModels
 
         private void OnKeyUp(object sender, GlobalInputEventArgs e)
         {
-            if (e.Key == Constants.ActivationButton)
+            if ((int)e.Key == _activationKey)
             {
                 e.Handled = true;
 
@@ -111,7 +123,8 @@ namespace QuickWheel.ViewModels
                 {
                     // Timer still running -> It was a short CLICK.
                     _activationTimer.Stop();
-                    _inputSender.SendForwardClick();
+                    // Send the original key click
+                    _inputSender.Send((Key)_activationKey);
                 }
                 else if (IsVisible)
                 {
