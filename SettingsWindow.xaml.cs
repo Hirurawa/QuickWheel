@@ -43,7 +43,10 @@ namespace QuickWheel
             {
                 int val = (int)e.NewValue;
                 ActivationDelayText.Text = $"{val} ms";
-                _settings.ActivationDelay = val;
+                if (_settings != null)
+                {
+                    _settings.ActivationDelay = val;
+                }
             }
         }
 
@@ -53,7 +56,10 @@ namespace QuickWheel
             {
                 int val = (int)e.NewValue;
                 HoverIntervalText.Text = $"{val} ms";
-                _settings.HoverInterval = val;
+                if (_settings != null)
+                {
+                    _settings.HoverInterval = val;
+                }
             }
         }
 

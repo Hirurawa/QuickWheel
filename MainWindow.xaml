@@ -32,7 +32,7 @@
                         IconSource="/Assets/app.ico">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Change Activation Key"
+                    <MenuItem Header="Edit Configuration"
                             Click="Settings_Click"/>
                     <Separator/>
                     <MenuItem Header="Exit QuickWheel"
