@@ -57,11 +57,9 @@ namespace QuickWheel
                         DrawDynamicWheel(_viewModel.CurrentSlices);
                         this.UpdateLayout();
 
-                        // Fade in (instant, but after render pass)
-                        Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
-                        {
-                            this.Opacity = 1;
-                        }));
+                        // Fade in (animated)
+                        DoubleAnimation fadeIn = new DoubleAnimation(1.0, TimeSpan.FromMilliseconds(100));
+                        this.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
                         _trapTimer.Start();
                     };

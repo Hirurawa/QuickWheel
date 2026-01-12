@@ -112,6 +112,9 @@ namespace QuickWheel.ViewModels
                 e.Handled = true;
                 if (!IsVisible && !_activationTimer.IsEnabled)
                 {
+                    ResetState();
+                    IsVisible = true;
+                    RequestShow?.Invoke(this, EventArgs.Empty);
                     _activationTimer.Start();
                 }
             }
@@ -125,16 +128,19 @@ namespace QuickWheel.ViewModels
 
                 if (_activationTimer.IsEnabled)
                 {
-                    // Timer still running -> It was a short CLICK.
+                    // Timer still running -> It was a short CLICK (Passthrough).
                     _activationTimer.Stop();
-                    // Send the original key click
+                    HideWindow();
                     _inputSender.Send((Key)_activationKey);
                 }
-                else if (IsVisible)
+                else
                 {
-                    // Wheel is open -> It was a HOLD.
-                    _hoverTimer.Stop();
-                    ExecuteCurrentSelection();
+                    // Timer finished -> It was a HOLD (Action).
+                    if (IsVisible)
+                    {
+                        _hoverTimer.Stop();
+                        ExecuteCurrentSelection();
+                    }
                 }
             }
         }
@@ -142,10 +148,6 @@ namespace QuickWheel.ViewModels
         private void ActivationTimer_Tick(object sender, EventArgs e)
         {
             _activationTimer.Stop();
-            // Timer finished -> User is HOLDING the button. Open the wheel.
-            ResetState();
-            IsVisible = true;
-            RequestShow?.Invoke(this, EventArgs.Empty);
         }
 
         private SliceConfig _selectedSlice;
