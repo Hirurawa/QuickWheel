@@ -15,8 +15,8 @@ namespace QuickWheel.Core
 
     public class GlobalKeyboardHook
     {
-        public event EventHandler<GlobalKeyEventArgs> OnKeyDown;
-        public event EventHandler<GlobalKeyEventArgs> OnKeyUp;
+        public event EventHandler<GlobalKeyEventArgs>? OnKeyDown;
+        public event EventHandler<GlobalKeyEventArgs>? OnKeyUp;
 
         private NativeMethods.HookProc _proc;
         private IntPtr _hookID = IntPtr.Zero;
@@ -39,7 +39,7 @@ namespace QuickWheel.Core
             if (nCode >= 0)
             {
                 // Marshal to KBDLLHOOKSTRUCT to check dwExtraInfo
-                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam)!;
 
                 if (hookStruct.dwExtraInfo == Constants.InputInjectionSignature)
                 {

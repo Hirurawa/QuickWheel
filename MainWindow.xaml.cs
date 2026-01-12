@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,8 +18,8 @@ namespace QuickWheel
 {
     public partial class MainWindow : Window
     {
-        private MainViewModel _viewModel;
-        private DispatcherTimer _trapTimer;
+        private MainViewModel _viewModel = null!;
+        private DispatcherTimer _trapTimer = null!;
         private List<StackPanel> _slicePanels = new List<StackPanel>();
 
         public MainWindow()
@@ -77,7 +77,7 @@ namespace QuickWheel
             };
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MainViewModel.CurrentSlices))
             {
@@ -196,7 +196,7 @@ namespace QuickWheel
         }
 
         // --- MOUSE LOGIC ---
-        private void TrapMouseInCircle(object sender, EventArgs e)
+        private void TrapMouseInCircle(object? sender, EventArgs e)
         {
             if (this.Visibility != Visibility.Visible) return;
 
@@ -298,7 +298,7 @@ namespace QuickWheel
             {
                 var panel = _slicePanels[i];
 
-                TextBlock textBlock = null;
+                TextBlock? textBlock = null;
                 foreach (var child in panel.Children)
                 {
                     if (child is TextBlock tb)

@@ -23,12 +23,12 @@ namespace QuickWheel.Models
 
     public class SliceConfig
     {
-        public string Label { get; set; }
-        public string Icon { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
         public SliceType Type { get; set; } = SliceType.App; // This defaults to "App" if missing in JSON
-        public string Path { get; set; }
-        public string Args { get; set; }
-        public string Data { get; set; }  // For Paste text
-        public List<SliceConfig> Items { get; set; }
+        public string Path { get; set; } = string.Empty;
+        public string Args { get; set; } = string.Empty;
+        public string Data { get; set; } = string.Empty;  // For Paste text
+        public List<SliceConfig> Items { get; set; } = new List<SliceConfig>();
     }
 }

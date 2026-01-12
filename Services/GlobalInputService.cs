@@ -10,8 +10,8 @@ namespace QuickWheel.Services
         private readonly GlobalMouseHook _mouseHook;
         private bool _isEnabled;
 
-        public event EventHandler<GlobalInputEventArgs> OnKeyDown;
-        public event EventHandler<GlobalInputEventArgs> OnKeyUp;
+        public event EventHandler<GlobalInputEventArgs>? OnKeyDown;
+        public event EventHandler<GlobalInputEventArgs>? OnKeyUp;
 
         public GlobalInputService()
         {

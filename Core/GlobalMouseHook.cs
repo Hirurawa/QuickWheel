@@ -8,8 +8,8 @@ namespace QuickWheel.Core
 {
     public class GlobalMouseHook
     {
-        public event EventHandler<GlobalKeyEventArgs> OnButtonDown;
-        public event EventHandler<GlobalKeyEventArgs> OnButtonUp;
+        public event EventHandler<GlobalKeyEventArgs>? OnButtonDown;
+        public event EventHandler<GlobalKeyEventArgs>? OnButtonUp;
 
         private NativeMethods.HookProc _proc;
         private IntPtr _hookID = IntPtr.Zero;
@@ -32,7 +32,7 @@ namespace QuickWheel.Core
         {
             if (nCode >= 0)
             {
-                var hookStruct = Marshal.PtrToStructure<NativeMethods.MSLLHOOKSTRUCT>(lParam);
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.MSLLHOOKSTRUCT>(lParam)!;
 
                 if (hookStruct.dwExtraInfo == Infrastructure.Constants.InputInjectionSignature)
                 {

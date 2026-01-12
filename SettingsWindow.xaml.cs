@@ -15,7 +15,7 @@ namespace QuickWheel
         private readonly AppSettings _settings;
         private bool _isListening;
 
-        public event EventHandler SettingsChanged;
+        public event EventHandler? SettingsChanged;
 
         public SettingsWindow(IInputService inputService, ISettingsService settingsService)
         {
@@ -187,7 +187,7 @@ namespace QuickWheel
             }
         }
 
-        private void OnGlobalKeyDown(object sender, GlobalInputEventArgs e)
+        private void OnGlobalKeyDown(object? sender, GlobalInputEventArgs e)
         {
             if (_isListening)
             {
@@ -218,7 +218,7 @@ namespace QuickWheel
             }
         }
 
-        private void SettingsWindow_Closed(object sender, EventArgs e)
+        private void SettingsWindow_Closed(object? sender, EventArgs e)
         {
             if (_isListening)
             {

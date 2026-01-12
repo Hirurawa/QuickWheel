@@ -7,10 +7,10 @@ namespace QuickWheel
 {
     public partial class App : Application
     {
-        private ILogger _logger;
-        private IInputService _inputService;
-        private ISettingsService _settingsService;
-        private MainViewModel _mainViewModel;
+        private ILogger _logger = null!;
+        private IInputService _inputService = null!;
+        private ISettingsService _settingsService = null!;
+        private MainViewModel _mainViewModel = null!;
 
         protected override void OnStartup(StartupEventArgs e)
         {
