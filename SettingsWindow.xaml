@@ -20,12 +20,20 @@
 
             <!-- Activation Delay -->
             <TextBlock Text="Activation Delay" Foreground="#AAAAAA" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-            <TextBlock x:Name="ActivationDelayText" Text="200 ms" FontWeight="Bold" FontSize="14" Foreground="#00D1FF" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                <TextBox x:Name="ActivationDelayInput" Width="50" TextAlignment="Right" Background="#333333" Foreground="#00D1FF" BorderBrush="#555555" FontWeight="Bold" FontSize="14"
+                         LostFocus="ActivationDelayInput_LostFocus" KeyDown="ActivationDelayInput_KeyDown"/>
+                <TextBlock Text=" ms" FontWeight="Bold" FontSize="14" Foreground="#00D1FF" VerticalAlignment="Center"/>
+            </StackPanel>
             <Slider x:Name="ActivationDelaySlider" Minimum="50" Maximum="2000" Width="250" Margin="0,0,0,15" ValueChanged="ActivationDelaySlider_ValueChanged"/>
 
             <!-- Hover Interval -->
             <TextBlock Text="Hover Interval" Foreground="#AAAAAA" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-            <TextBlock x:Name="HoverIntervalText" Text="350 ms" FontWeight="Bold" FontSize="14" Foreground="#00D1FF" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                <TextBox x:Name="HoverIntervalInput" Width="50" TextAlignment="Right" Background="#333333" Foreground="#00D1FF" BorderBrush="#555555" FontWeight="Bold" FontSize="14"
+                         LostFocus="HoverIntervalInput_LostFocus" KeyDown="HoverIntervalInput_KeyDown"/>
+                <TextBlock Text=" ms" FontWeight="Bold" FontSize="14" Foreground="#00D1FF" VerticalAlignment="Center"/>
+            </StackPanel>
             <Slider x:Name="HoverIntervalSlider" Minimum="50" Maximum="2000" Width="250" Margin="0,0,0,20" ValueChanged="HoverIntervalSlider_ValueChanged"/>
 
             <Button x:Name="SaveButton" Content="Save" Click="SaveButton_Click"
